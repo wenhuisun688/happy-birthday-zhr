@@ -5,14 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>生日快乐 张慧冉</title>
 
+    <!-- 引入艺术字体 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Great+Vibes&family=Montserrat:wght@700;800;900&family=Noto+Sans+SC:wght@500;700;900&display=swap" rel="stylesheet">
 
-    <!-- 引入 Supabase 官方 SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <style>
+        /* 全局样式复位 */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body, html {
@@ -29,24 +28,27 @@
 
         @keyframes fadeInBody { 0% { opacity: 0; } 100% { opacity: 1; } }
 
+        /* ---------------- 🎵 5.jpg 右上角圆形匀速旋转音乐按钮 ---------------- */
         .music-disc-btn {
-            position: fixed; top: 20px; right: 20px; width: 42px; height: 42px;
-            border-radius: 50%; background: rgba(255, 255, 255, 0.75);
+            position: fixed; top: 20px; right: 20px; width: 50px; height: 50px;
+            border-radius: 50%; background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border: 1.5px solid rgba(255, 255, 255, 0.95);
-            box-shadow: 0 8px 24px rgba(120, 70, 180, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.95);
+            box-shadow: 0 8px 24px rgba(120, 70, 180, 0.25);
             display: flex; align-items: center; justify-content: center;
-            z-index: 1000; cursor: pointer; overflow: hidden;
+            z-index: 9999; cursor: pointer; overflow: hidden;
+            touch-action: manipulation;
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .music-disc-btn:active { transform: scale(0.9); }
         .music-avatar-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
         .music-disc-btn.playing .music-avatar-img { animation: rotateDisc 4s linear infinite; }
-        .music-disc-btn.paused { opacity: 0.6; }
+        .music-disc-btn.paused { opacity: 0.65; }
         @keyframes rotateDisc { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* 点击微光粒子特效 */
         .click-particle {
-            position: fixed; pointer-events: none; z-index: 9999; font-size: 16px; user-select: none;
+            position: fixed; pointer-events: none; z-index: 9998; font-size: 16px; user-select: none;
             animation: clickParticleAnim 0.7s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
         }
         @keyframes clickParticleAnim {
@@ -54,6 +56,7 @@
             100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.2); opacity: 0; }
         }
 
+        /* 背景流光与粒子 */
         .bg-glow-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; z-index: 0; }
         .glow-orb { position: absolute; border-radius: 50%; filter: blur(55px); opacity: 0.45; animation: orbFloat 8s ease-in-out infinite alternate; }
         .glow-orb-1 { width: 240px; height: 240px; background: #d8b4fe; bottom: -30px; right: -20px; animation-duration: 7s; }
@@ -63,6 +66,7 @@
 
         .bg-particles { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
 
+        /* 屏幕通用 */
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -71,6 +75,7 @@
         }
         .screen.active { opacity: 1; visibility: visible; }
 
+        /* ---------------- 第一屏：欢迎卡片与 1.jpg ---------------- */
         .welcome-card {
             position: relative; background: rgba(255, 255, 255, 0.68); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border: 1.5px solid rgba(255, 255, 255, 0.95); border-radius: 28px; padding: 48px 20px 60px 20px;
@@ -87,11 +92,12 @@
         .sub-note { position: absolute; bottom: 20px; right: 24px; font-size: 11.5px; font-weight: 700; color: #8b68aa; opacity: 0.9; }
 
         .tap-hint {
-            position: absolute; bottom: 50px; font-size: 13.5px; font-weight: 700; color: #7b53a6; letter-spacing: 2px;
-            display: flex; align-items: center; justify-content: center; gap: 8px; animation: pulseHint 2s infinite;
+            position: absolute; bottom: 40px; font-size: 14.5px; font-weight: 700; color: #7b53a6; letter-spacing: 2px;
+            display: flex; align-items: center; justify-content: center; gap: 10px; animation: pulseHint 2s infinite;
         }
-        .hint-avatar { width: 26px; height: 26px; border-radius: 8px; object-fit: cover; box-shadow: 0 3px 10px rgba(123, 83, 166, 0.3); border: 1.5px solid rgba(255, 255, 255, 0.9); display: inline-block; }
+        .hint-avatar { width: 38px; height: 38px; border-radius: 10px; object-fit: cover; box-shadow: 0 4px 12px rgba(123, 83, 166, 0.35); border: 2px solid rgba(255, 255, 255, 0.95); display: inline-block; }
 
+        /* ---------------- 第二屏：计时卡片与 2.jpg ---------------- */
         .timer-card {
             background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border: 1.5px solid rgba(255, 255, 255, 0.95); border-radius: 28px; padding: 28px 16px;
@@ -126,16 +132,17 @@
         }
 
         .memory-entry-btn {
-            margin-top: 6px; padding: 12px 24px; border-radius: 20px;
+            margin-top: 6px; padding: 12px 24px; border-radius: 22px;
             background: linear-gradient(135deg, #7b39ed 0%, #a855f7 100%);
-            color: #ffffff; font-weight: 800; font-size: 14.5px; letter-spacing: 2px;
+            color: #ffffff; font-weight: 800; font-size: 15px; letter-spacing: 2px;
             box-shadow: 0 8px 20px rgba(123, 57, 237, 0.35); cursor: pointer;
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            display: flex; align-items: center; justify-content: center; gap: 8px; animation: pulseHint 2s infinite;
+            display: flex; align-items: center; justify-content: center; gap: 10px; animation: pulseHint 2s infinite;
         }
         .memory-entry-btn:active { transform: scale(0.94); }
-        .btn-avatar { width: 22px; height: 22px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255, 255, 255, 0.9); box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: inline-block; vertical-align: middle; }
+        .btn-avatar { width: 34px; height: 34px; border-radius: 8px; object-fit: cover; border: 1.5px solid rgba(255, 255, 255, 0.95); box-shadow: 0 3px 8px rgba(0,0,0,0.18); display: inline-block; vertical-align: middle; }
 
+        /* ---------------- 第三屏：回忆相册与 3.jpg / 6.jpg ---------------- */
         #screen3 { padding: 16px; overflow-y: auto; }
         .gallery-wrapper {
             position: relative; width: 100%; min-height: 100%; display: flex; flex-direction: column;
@@ -144,11 +151,12 @@
         }
         .gallery-wrapper.searched { justify-content: flex-start; padding-top: 20px; padding-bottom: 30px; }
 
+        /* 💖 右下角惊喜小按钮 */
         .corner-heart-btn {
-            position: absolute; bottom: 24px; right: 12px; width: 44px; height: 44px; border-radius: 50%;
+            position: absolute; bottom: 24px; right: 12px; width: 46px; height: 46px; border-radius: 50%;
             background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             border: 1.5px solid rgba(255, 255, 255, 0.95); box-shadow: 0 8px 22px rgba(130, 70, 180, 0.22);
-            display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; z-index: 50;
+            display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; z-index: 50;
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
         }
         .corner-heart-btn:hover { transform: scale(1.18); box-shadow: 0 12px 30px rgba(124, 58, 237, 0.35); }
@@ -179,16 +187,16 @@
 
         .search-box-container {
             flex: 1; display: flex; align-items: center; background: #ffffff; border-radius: 22px;
-            padding: 0 6px 0 12px; height: 40px; box-shadow: 0 2px 10px rgba(120, 80, 180, 0.06);
+            padding: 0 8px 0 10px; height: 46px; box-shadow: 0 2px 10px rgba(120, 80, 180, 0.06);
             border: 1.5px solid rgba(190, 150, 230, 0.3); transition: border-color 0.3s;
         }
         .search-box-container:focus-within { border-color: #8b5cf6; }
-        .search-custom-icon { width: 22px; height: 22px; border-radius: 6px; object-fit: cover; margin-right: 8px; flex-shrink: 0; border: 1px solid rgba(190, 150, 230, 0.4); }
+        .search-custom-icon { width: 32px; height: 32px; border-radius: 8px; object-fit: cover; margin-right: 8px; flex-shrink: 0; border: 1.5px solid rgba(190, 150, 230, 0.5); }
         .search-input { width: 100%; border: none; outline: none; background: transparent; font-size: 13.5px; font-weight: 700; color: #4c1d95; }
         .search-input::placeholder { color: #a78bfa; font-weight: 500; }
 
         .search-submit-btn {
-            padding: 0 12px; height: 28px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+            padding: 0 12px; height: 32px; border-radius: 16px; background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
             color: #ffffff; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center;
             cursor: pointer; box-shadow: 0 3px 10px rgba(124, 58, 237, 0.3); flex-shrink: 0; transition: transform 0.2s;
         }
@@ -219,6 +227,7 @@
 
         .empty-hint { text-align: center; color: #8b5cf6; font-weight: 700; font-size: 14px; margin-top: 40px; line-height: 1.8; }
 
+        /* ---------------- 灯箱大图预览层 ---------------- */
         .lightbox-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(30, 10, 60, 0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
@@ -233,6 +242,7 @@
         }
         .lightbox-overlay.show .lightbox-img { transform: scale(1); }
 
+        /* ---------------- 上传弹窗与照片拖拽/选择框 ---------------- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(30, 10, 60, 0.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -249,7 +259,7 @@
         .modal-title-bar { display: flex; justify-content: space-between; align-items: center; }
         .modal-title-wrapper { display: flex; align-items: center; gap: 8px; }
         .modal-title { font-size: 18px; font-weight: 900; color: #4c1d95; letter-spacing: 1px; }
-        .modal-title-avatar { width: 20px; height: 20px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(168, 85, 247, 0.4); display: inline-block; vertical-align: middle; }
+        .modal-title-avatar { width: 32px; height: 32px; border-radius: 8px; object-fit: cover; border: 1.5px solid rgba(168, 85, 247, 0.5); display: inline-block; vertical-align: middle; }
         .close-modal-btn { font-size: 18px; font-weight: 800; color: #9333ea; cursor: pointer; padding: 4px; }
 
         .form-row { display: flex; flex-direction: column; gap: 8px; text-align: left; }
@@ -265,9 +275,15 @@
         .wheel-col::-webkit-scrollbar { display: none; }
         .wheel-item { height: 34px; line-height: 34px; text-align: center; font-size: 15px; font-weight: 800; color: #4c1d95; scroll-snap-align: center; font-family: 'Montserrat', 'Noto Sans SC', sans-serif; will-change: transform, opacity; transform: translateZ(0); cursor: pointer; }
 
-        .upload-dropzone { width: 100%; height: 95px; border-radius: 16px; border: 2px dashed rgba(168, 85, 247, 0.4); background: rgba(245, 237, 255, 0.6); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; transition: background 0.3s; }
-        .upload-dropzone:hover { background: rgba(237, 222, 255, 0.8); }
-        .upload-icon-text { font-size: 12.5px; font-weight: 700; color: #7c3aed; text-align: center; }
+        /* 本地直传图片上传框 */
+        .upload-dropzone {
+            width: 100%; height: 100px; border-radius: 16px; border: 2px dashed rgba(168, 85, 247, 0.5);
+            background: rgba(245, 237, 255, 0.6); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; cursor: pointer; position: relative;
+            overflow: hidden; transition: all 0.3s ease;
+        }
+        .upload-dropzone:hover { background: rgba(237, 222, 255, 0.85); border-color: #8b5cf6; }
+        .upload-icon-text { font-size: 13px; font-weight: 700; color: #7c3aed; text-align: center; }
         .upload-preview-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; display: none; }
 
         .submit-upload-btn { width: 100%; height: 44px; border-radius: 14px; border: none; background: linear-gradient(135deg, #7c3aed 0%, #c084fc 100%); color: #ffffff; font-weight: 900; font-size: 15px; letter-spacing: 1px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.3); cursor: pointer; margin-top: 2px; }
@@ -283,23 +299,24 @@
             .digit-card { width: 17px; height: 27px; font-size: 15px; }
             .colon { font-size: 14px; line-height: 27px; }
             .story-title { font-size: 23px; margin-bottom: 10px; }
-            .music-disc-btn { top: 16px; right: 16px; width: 38px; height: 38px; }
+            .music-disc-btn { top: 16px; right: 16px; width: 44px; height: 44px; }
         }
     </style>
 </head>
 <body>
 
+    <!-- 🎵 5.jpg 音乐按钮 -->
     <div class="music-disc-btn paused" id="musicBtn" title="开关背景音乐">
         <img src="5.jpg" class="music-avatar-img" alt="5">
     </div>
     <audio id="bgm" src="bgm.mp3" loop></audio>
 
+    <!-- 背景粒子特效 -->
     <div class="bg-glow-container">
         <div class="glow-orb glow-orb-1"></div>
         <div class="glow-orb glow-orb-2"></div>
         <div class="glow-orb glow-orb-3"></div>
     </div>
-
     <div class="bg-particles" id="particles"></div>
 
     <!-- 第一屏 -->
@@ -309,6 +326,7 @@
             <span class="welcome-name">生日快乐</span>
             <span class="sub-note">谨记张慧冉第19个生日</span>
         </div>
+        <!-- 📷 1.jpg -->
         <div class="tap-hint">
             点击屏幕以继续
             <img src="1.jpg" class="hint-avatar" alt="1">
@@ -342,6 +360,7 @@
                 <p class="timer-header">你已经：</p>
                 <div class="precise-card"><span class="gradient-flow-num" id="preciseAge">19.00000000 岁</span></div>
             </div>
+            <!-- 📷 2.jpg -->
             <div class="memory-entry-btn" id="toPage3Btn">
                 开启回忆... 
                 <img src="2.jpg" class="btn-avatar" alt="2">
@@ -352,14 +371,17 @@
     <!-- 第三屏 -->
     <div class="screen" id="screen3">
         <div class="gallery-wrapper" id="galleryWrapper">
+            <!-- 💖 右下角按钮 (点击弹出 6.jpg) -->
             <div class="corner-heart-btn" id="cornerHeartBtn" title="专属惊喜">💖</div>
+
             <div class="story-title">Every little piece of our story</div>
 
             <div class="nav-header">
                 <div class="back-icon-btn" id="backToPage2">‹</div>
                 <div class="search-box-container">
+                    <!-- 📷 3.jpg -->
                     <img src="3.jpg" class="search-custom-icon" alt="3">
-                    <input type="text" class="search-input" id="searchInput" placeholder="输入日期 (如 3.4) 检索...">
+                    <input type="text" class="search-input" id="searchInput" placeholder="输入日期 (如 25.2.2 或 26.2.2) 检索...">
                     <div class="search-submit-btn" id="searchSubmitBtn">搜索</div>
                 </div>
                 <div class="add-plus-btn" id="openUploadModalBtn">+</div>
@@ -368,26 +390,29 @@
             <div class="gallery-content" id="galleryContent" style="display: none;">
                 <div class="photo-grid" id="photoGrid"></div>
                 <div class="empty-hint" id="emptyHint" style="display: none;">
-                    🌸 暂无该日期的回忆照片<br><span style="font-size: 12px; opacity: 0.8;">点击右上角 + 按钮上传新的照片</span>
+                    🌸 暂无该日期的回忆照片<br><span style="font-size: 12px; opacity: 0.8;">输入日期检索（支持如 25.2.2 或 26.2.2）</span>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- 通用照片放大灯箱 -->
     <div class="lightbox-overlay" id="lightboxOverlay">
         <img class="lightbox-img" id="lightboxImg" alt="大图预览">
     </div>
 
+    <!-- 📷 6.jpg 专属大图灯箱 -->
     <div class="lightbox-overlay" id="heartLightboxOverlay">
         <img class="lightbox-img" src="6.jpg" alt="惊喜大图">
     </div>
 
-    <!-- 上传弹窗 -->
+    <!-- 上传弹窗（已恢复图片选择功能） -->
     <div class="modal-overlay" id="uploadModal">
         <div class="modal-card">
             <div class="modal-title-bar">
                 <div class="modal-title-wrapper">
                     <span class="modal-title">添加照片</span>
+                    <!-- 📷 4.jpg -->
                     <img src="4.jpg" class="modal-title-avatar" alt="4">
                 </div>
                 <span class="close-modal-btn" id="closeUploadModalBtn">✕</span>
@@ -404,34 +429,24 @@
             </div>
 
             <div class="form-row">
-                <label class="form-label">2. 选择图片</label>
-                <div class="upload-dropzone" id="uploadZone">
-                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
-                    <div class="upload-icon-text" id="uploadText">
-                        <span style="font-size: 18px; display: block; margin-bottom: 2px;">📷</span>
-                        点击选择手机或电脑图片
-                    </div>
-                    <img id="previewImg" class="upload-preview-img" alt="预览">
+                <label class="form-label">2. 选择并上传照片</label>
+                <div class="upload-dropzone" id="uploadDropzone">
+                    <input type="file" id="photoFileInput" accept="image/*" style="display: none;">
+                    <span class="upload-icon-text" id="uploadDropzoneText">📸 点击选择或拖拽照片到这里</span>
+                    <img src="" class="upload-preview-img" id="uploadPreviewImg" alt="预览">
                 </div>
             </div>
 
-            <button class="submit-upload-btn" id="savePhotoBtn">保存上传</button>
+            <button class="submit-upload-btn" id="savePhotoBtn">保存照片</button>
         </div>
     </div>
 
     <script>
-        // ---------------- ⚡ SUPABASE 云端数据库与存储配置 ----------------
-        const SUPABASE_URL = 'https://zuijertizajaelafpsir.supabase.co';
-        // ⚠️ 请将下方的字符串替换为您在 Supabase Settings -> API 里复制的 anon public key 密钥
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1aWplcnRpemFqYWVsYWZwc2lyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4OTI1NzQsImV4cCI6MjEwMDQ2ODU3NH0.KtbHXcVPl0HoSnNAVzZZ7NvIwZanFJjPC6Zop3TqNuY';
-
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         const BIRTH_DATE = new Date(2007, 6, 28, 12, 10, 0); 
         const MS_PER_DAY = 1000 * 60 * 60 * 24;
         const MS_PER_YEAR = MS_PER_DAY * 365.2425;
 
-        // BGM 逻辑
+        // 🎵 BGM 播放与移动端兼容处理
         const bgm = document.getElementById('bgm');
         const musicBtn = document.getElementById('musicBtn');
         const TARGET_VOLUME = 0.35; 
@@ -475,10 +490,32 @@
             }, 50);
         }
 
-        musicBtn.addEventListener('click', (e) => { e.stopPropagation(); isMusicPlaying ? fadeOutBGM() : fadeInBGM(); });
-        document.addEventListener('pointerdown', function handleFirst() { if(!isMusicPlaying) fadeInBGM(); document.removeEventListener('pointerdown', handleFirst); });
+        function toggleBGM(e) {
+            if (e) {
+                e.stopPropagation();
+                if (e.cancelable) e.preventDefault();
+            }
+            if (isMusicPlaying) {
+                fadeOutBGM();
+            } else {
+                fadeInBGM();
+            }
+        }
 
-        // 点击粒子效果
+        musicBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
+        musicBtn.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
+        musicBtn.addEventListener('click', toggleBGM);
+
+        function handleFirstTouch(e) {
+            if (musicBtn.contains(e.target)) return;
+            if (!isMusicPlaying) fadeInBGM();
+            document.removeEventListener('pointerdown', handleFirstTouch);
+            document.removeEventListener('touchstart', handleFirstTouch);
+        }
+        document.addEventListener('pointerdown', handleFirstTouch);
+        document.addEventListener('touchstart', handleFirstTouch, { passive: true });
+
+        // 点击音效与粒子
         let audioCtx = null;
         function playCuteSound() {
             try {
@@ -531,7 +568,7 @@
         document.getElementById('toPage3Btn').addEventListener('click', (e) => { e.stopPropagation(); screen2.classList.remove('active'); setTimeout(() => screen3.classList.add('active'), 300); });
         document.getElementById('backToPage2').addEventListener('click', () => { screen3.classList.remove('active'); setTimeout(() => screen2.classList.add('active'), 300); });
 
-        // 计时器逻辑
+        // 高精计时器
         function setFlipDigit(id, newChar) {
             const el = document.getElementById(id);
             if (el && el.innerText !== newChar) {
@@ -580,7 +617,7 @@
 
         function initWheelPicker() {
             yearWheel.innerHTML = '';
-            for (let y = 2000; y <= 2030; y++) {
+            for (let y = 2025; y <= 2026; y++) {
                 const item = document.createElement('div'); item.className = 'wheel-item'; item.dataset.val = y; item.innerText = y + ' 年'; yearWheel.appendChild(item);
             }
             monthWheel.innerHTML = '';
@@ -653,7 +690,50 @@
         monthWheel.addEventListener('scroll', handleYearMonthChange, { passive: true });
         initWheelPicker();
 
-        // ---------------- 相册检索与 SUPABASE 交互逻辑 ----------------
+        // ---------------- 📦 本地 IndexedDB 数据库存储逻辑 ----------------
+        let db = null;
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open("AnimeBirthdayGalleryDB", 1);
+                req.onupgradeneeded = (e) => {
+                    db = e.target.result;
+                    if (!db.objectStoreNames.contains("photos")) {
+                        db.createObjectStore("photos", { keyPath: "id", autoIncrement: true });
+                    }
+                };
+                req.onsuccess = (e) => {
+                    db = e.target.result;
+                    resolve(db);
+                };
+                req.onerror = (e) => reject(e);
+            });
+        }
+
+        function savePhotoToDB(photoObj) {
+            return new Promise((resolve, reject) => {
+                if (!db) return reject("数据库未就绪");
+                const tx = db.transaction("photos", "readwrite");
+                const store = tx.objectStore("photos");
+                const req = store.add(photoObj);
+                req.onsuccess = () => resolve();
+                req.onerror = (e) => reject(e);
+            });
+        }
+
+        function getPhotosFromDB() {
+            return new Promise((resolve) => {
+                if (!db) return resolve([]);
+                const tx = db.transaction("photos", "readonly");
+                const store = tx.objectStore("photos");
+                const req = store.getAll();
+                req.onsuccess = () => resolve(req.result || []);
+                req.onerror = () => resolve([]);
+            });
+        }
+
+        initDB().catch(console.error);
+
+        // ---------------- 相册检索与年份匹配 ----------------
         const galleryWrapper = document.getElementById('galleryWrapper');
         const photoGrid = document.getElementById('photoGrid');
         const searchInput = document.getElementById('searchInput');
@@ -669,30 +749,59 @@
         cornerHeartBtn.addEventListener('click', (e) => { e.stopPropagation(); heartLightboxOverlay.classList.add('show'); });
         heartLightboxOverlay.addEventListener('click', () => heartLightboxOverlay.classList.remove('show'));
 
-        function normalizeDateQuery(str) { return str ? str.replace(/月/g, '.').replace(/日/g, '').replace(/-/g, '.').trim() : ""; }
+        let localPhotosCache = null;
+
+        function isDateMatch(photoDateStr, searchInput) {
+            if (!searchInput || !searchInput.trim()) return true;
+
+            let input = searchInput.trim().toLowerCase();
+            input = input.replace(/年|月|-/g, '.').replace(/日/g, '');
+            const target = photoDateStr.trim().toLowerCase();
+
+            if (target === input) return true;
+
+            if (input.startsWith('25.') || input.startsWith('26.')) {
+                return target === input || target.includes(input);
+            }
+
+            const default26 = `26.${input}`;
+            if (target === default26 || target.endsWith(`.${input}`)) {
+                return true;
+            }
+
+            return target.includes(input);
+        }
 
         async function executeSearch() {
-            const query = normalizeDateQuery(searchInput.value);
-            if (!query) { alert("请输入要检索的日期（例如 3.4）"); return; }
+            const query = searchInput.value;
 
             galleryWrapper.classList.add('searched');
             galleryContent.style.display = "block";
-            photoGrid.innerHTML = "<div style='grid-column: 1/-1; text-align:center; color:#8b5cf6;'>☁️ 正在读取云端照片...</div>";
+            photoGrid.innerHTML = "<div style='grid-column: 1/-1; text-align:center; color:#8b5cf6;'>🌸 正在加载回忆照片...</div>";
 
             try {
-                // 从 Supabase 数据库拉取所有照片
-                const { data: cloudPhotos, error } = await supabaseClient
-                    .from('photos')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+                // 1. 获取静态 photos.json 中的照片
+                if (!localPhotosCache) {
+                    try {
+                        const response = await fetch('photos.json');
+                        if (response.ok) {
+                            localPhotosCache = await response.json();
+                        } else {
+                            localPhotosCache = [];
+                        }
+                    } catch (e) {
+                        localPhotosCache = [];
+                    }
+                }
 
-                if (error) throw error;
+                // 2. 获取浏览器本地直接上传的照片
+                const dbPhotos = await getPhotosFromDB();
+
+                // 3. 合并所有照片（本地上传优先放置在前面）
+                const allPhotos = [...dbPhotos, ...(localPhotosCache || [])];
 
                 photoGrid.innerHTML = "";
-                let filtered = (cloudPhotos || []).filter(item => {
-                    const itemDate = normalizeDateQuery(item.date_str);
-                    return itemDate.includes(query) || query.includes(itemDate);
-                });
+                let filtered = allPhotos.filter(item => isDateMatch(item.date_str, query));
 
                 if (filtered.length === 0) {
                     emptyHint.style.display = "block";
@@ -701,14 +810,18 @@
                     filtered.forEach(photo => {
                         const card = document.createElement('div');
                         card.className = 'photo-card';
-                        card.innerHTML = `<img src="${photo.img_url}" alt="回忆照片"><span class="photo-tag">${photo.date_str}</span>`;
-                        card.addEventListener('click', (e) => { e.stopPropagation(); lightboxImg.src = photo.img_url; lightboxOverlay.classList.add('show'); });
+                        card.innerHTML = `<img src="${photo.img_url}" loading="lazy" alt="回忆照片"><span class="photo-tag">${photo.date_str}</span>`;
+                        card.addEventListener('click', (e) => { 
+                            e.stopPropagation(); 
+                            lightboxImg.src = photo.img_url; 
+                            lightboxOverlay.classList.add('show'); 
+                        });
                         photoGrid.appendChild(card);
                     });
                 }
             } catch (err) {
                 console.error(err);
-                photoGrid.innerHTML = "<div style='grid-column: 1/-1; text-align:center; color:#e11d48;'>读取失败，请检查 Supabase 密钥配置</div>";
+                photoGrid.innerHTML = "<div style='grid-column: 1/-1; text-align:center; color:#e11d48;'>加载失败，请重试</div>";
             }
         }
 
@@ -717,92 +830,97 @@
         lightboxOverlay.addEventListener('click', () => lightboxOverlay.classList.remove('show'));
         lightboxImg.addEventListener('click', (e) => e.stopPropagation());
 
-        // ---------------- ☁️ SUPABASE 上传逻辑 ----------------
+        // ---------------- 📤 弹窗照片选择与保存 ----------------
         const uploadModal = document.getElementById('uploadModal');
         const openUploadModalBtn = document.getElementById('openUploadModalBtn');
         const closeUploadModalBtn = document.getElementById('closeUploadModalBtn');
-        const uploadZone = document.getElementById('uploadZone');
-        const fileInput = document.getElementById('fileInput');
-        const previewImg = document.getElementById('previewImg');
-        const uploadText = document.getElementById('uploadText');
         const savePhotoBtn = document.getElementById('savePhotoBtn');
 
-        let selectedFile = null;
+        const uploadDropzone = document.getElementById('uploadDropzone');
+        const photoFileInput = document.getElementById('photoFileInput');
+        const uploadDropzoneText = document.getElementById('uploadDropzoneText');
+        const uploadPreviewImg = document.getElementById('uploadPreviewImg');
+        let currentSelectedBase64 = null;
 
-        openUploadModalBtn.addEventListener('click', () => {
-            uploadModal.classList.add('show');
-            setTimeout(() => { scrollWheelToValue(yearWheel, 2026); scrollWheelToValue(monthWheel, 7); scrollWheelToValue(dayWheel, 28); }, 100);
-        });
-
+        openUploadModalBtn.addEventListener('click', () => uploadModal.classList.add('show'));
         closeUploadModalBtn.addEventListener('click', () => uploadModal.classList.remove('show'));
-        uploadZone.addEventListener('click', () => fileInput.click());
 
-        fileInput.addEventListener('change', function(e) {
+        uploadDropzone.addEventListener('click', () => photoFileInput.click());
+
+        photoFileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
-                selectedFile = file;
                 const reader = new FileReader();
-                reader.onload = function(evt) { previewImg.src = evt.target.result; previewImg.style.display = 'block'; uploadText.style.display = 'none'; };
+                reader.onload = (event) => {
+                    currentSelectedBase64 = event.target.result;
+                    uploadPreviewImg.src = currentSelectedBase64;
+                    uploadPreviewImg.style.display = 'block';
+                    uploadDropzoneText.style.display = 'none';
+                };
                 reader.readAsDataURL(file);
             }
         });
 
-        savePhotoBtn.addEventListener('click', async function() {
-            if (!selectedFile) { alert("请选择要上传的照片！"); return; }
-
-            const selectedMonth = getWheelValue(monthWheel) || 7;
-            const selectedDay = getWheelValue(dayWheel) || 28;
-            const formattedDateStr = `${selectedMonth}.${selectedDay}`;
-
-            savePhotoBtn.innerText = "上传中...";
-            savePhotoBtn.disabled = true;
-
-            try {
-                // 1. 生成唯一文件名上传至 Storage 'photos' 桶
-                const fileExt = selectedFile.name.split('.').pop();
-                const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
-
-                const { data: uploadData, error: uploadError } = await supabaseClient
-                    .storage
-                    .from('photos')
-                    .upload(fileName, selectedFile);
-
-                if (uploadError) throw uploadError;
-
-                // 2. 获取图片的直链 URL
-                const { data: publicUrlData } = supabaseClient
-                    .storage
-                    .from('photos')
-                    .getPublicUrl(fileName);
-
-                const publicUrl = publicUrlData.publicUrl;
-
-                // 3. 将图片直链与日期保存到 'photos' 数据表
-                const { error: dbError } = await supabaseClient
-                    .from('photos')
-                    .insert([{ img_url: publicUrl, date_str: formattedDateStr }]);
-
-                if (dbError) throw dbError;
-
-                alert("✨ 照片成功同步上传至云端！所有人均可访问！");
-                uploadModal.classList.remove('show');
-                selectedFile = null;
-                previewImg.style.display = 'none';
-                uploadText.style.display = 'block';
-                fileInput.value = '';
-
-                searchInput.value = formattedDateStr;
-                executeSearch();
-
-            } catch (err) {
-                alert("上传失败: " + (err.message || "请检查网络或 Supabase 配置"));
-            } finally {
-                savePhotoBtn.innerText = "保存上传";
-                savePhotoBtn.disabled = false;
+        // 拖拽文件上传支持
+        uploadDropzone.addEventListener('dragover', (e) => { e.preventDefault(); uploadDropzone.style.background = 'rgba(237, 222, 255, 0.95)'; });
+        uploadDropzone.addEventListener('dragleave', () => { uploadDropzone.style.background = 'rgba(245, 237, 255, 0.6)'; });
+        uploadDropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadDropzone.style.background = 'rgba(245, 237, 255, 0.6)';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    currentSelectedBase64 = event.target.result;
+                    uploadPreviewImg.src = currentSelectedBase64;
+                    uploadPreviewImg.style.display = 'block';
+                    uploadDropzoneText.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
             }
         });
 
-        // 粒子背景
+        // 点击“保存照片”
+        savePhotoBtn.addEventListener('click', async () => {
+            if (!currentSelectedBase64) {
+                alert('请先选择或拖拽一张照片！');
+                return;
+            }
+
+            const y = getWheelValue(yearWheel) || 2026;
+            const m = getWheelValue(monthWheel) || 7;
+            const d = getWheelValue(dayWheel) || 28;
+
+            const shortYear = String(y).slice(-2);
+            const dateStr = `${shortYear}.${m}.${d}`;
+
+            const photoObj = {
+                date_str: dateStr,
+                img_url: currentSelectedBase64,
+                timestamp: Date.now()
+            };
+
+            try {
+                await savePhotoToDB(photoObj);
+                alert(`🌸 照片保存成功！（对应日期：${dateStr}）`);
+
+                // 重置选择框
+                currentSelectedBase64 = null;
+                uploadPreviewImg.src = '';
+                uploadPreviewImg.style.display = 'none';
+                uploadDropzoneText.style.display = 'block';
+                photoFileInput.value = '';
+                uploadModal.classList.remove('show');
+
+                // 立即刷新页面照片展示
+                executeSearch();
+            } catch (err) {
+                console.error(err);
+                alert('保存失败，请稍后重试！');
+            }
+        });
+
+        // 背景微光粒子生成
         const particlesContainer = document.getElementById('particles');
         for (let i = 0; i < 20; i++) {
             const particle = document.createElement('div');
