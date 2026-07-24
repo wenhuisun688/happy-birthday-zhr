@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>生日快乐 张慧冉</title>
-    <!-- 引入字体：Noto Sans SC, Montserrat & 浪漫艺术花体字 Great Vibes, Dancing Script -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Great+Vibes&family=Montserrat:wght@700;800;900&family=Noto+Sans+SC:wght@500;700;900&display=swap" rel="stylesheet">
 
+    <!-- 引入 Supabase 官方 SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
-        /* 全局样式定义 */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body, html {
@@ -25,206 +27,79 @@
             will-change: opacity;
         }
 
-        @keyframes fadeInBody {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
-        }
+        @keyframes fadeInBody { 0% { opacity: 0; } 100% { opacity: 1; } }
 
-        /* ---------------- 🎵 5.jpg 圆形旋转音乐按钮 ---------------- */
         .music-disc-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            position: fixed; top: 20px; right: 20px; width: 42px; height: 42px;
+            border-radius: 50%; background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             border: 1.5px solid rgba(255, 255, 255, 0.95);
             box-shadow: 0 8px 24px rgba(120, 70, 180, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            cursor: pointer;
-            overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; cursor: pointer; overflow: hidden;
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+        .music-disc-btn:active { transform: scale(0.9); }
+        .music-avatar-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+        .music-disc-btn.playing .music-avatar-img { animation: rotateDisc 4s linear infinite; }
+        .music-disc-btn.paused { opacity: 0.6; }
+        @keyframes rotateDisc { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .music-disc-btn:active {
-            transform: scale(0.9);
-        }
-
-        .music-avatar-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-            display: block;
-        }
-
-        .music-disc-btn.playing .music-avatar-img {
-            animation: rotateDisc 4s linear infinite;
-        }
-
-        .music-disc-btn.paused {
-            opacity: 0.6;
-        }
-
-        @keyframes rotateDisc {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* ---------------- 全局点击粒子特效 ---------------- */
         .click-particle {
-            position: fixed;
-            pointer-events: none;
-            z-index: 9999;
-            font-size: 16px;
-            user-select: none;
+            position: fixed; pointer-events: none; z-index: 9999; font-size: 16px; user-select: none;
             animation: clickParticleAnim 0.7s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
         }
-
         @keyframes clickParticleAnim {
             0% { transform: translate(-50%, -50%) scale(0.4); opacity: 1; }
             100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.2); opacity: 0; }
         }
 
-        /* ---------------- 背景柔和光晕 ---------------- */
-        .bg-glow-container {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            overflow: hidden;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .glow-orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(55px);
-            opacity: 0.45;
-            animation: orbFloat 8s ease-in-out infinite alternate;
-        }
-
+        .bg-glow-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; z-index: 0; }
+        .glow-orb { position: absolute; border-radius: 50%; filter: blur(55px); opacity: 0.45; animation: orbFloat 8s ease-in-out infinite alternate; }
         .glow-orb-1 { width: 240px; height: 240px; background: #d8b4fe; bottom: -30px; right: -20px; animation-duration: 7s; }
         .glow-orb-2 { width: 280px; height: 280px; background: #f472b6; bottom: -50px; right: -50px; animation-duration: 8.5s; animation-delay: -3s; }
         .glow-orb-3 { width: 180px; height: 180px; background: #c084fc; bottom: 50px; right: 30px; animation-duration: 6s; animation-delay: -1.5s; }
+        @keyframes orbFloat { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-22px, -18px) scale(1.12); } 100% { transform: translate(15px, -28px) scale(0.92); } }
 
-        @keyframes orbFloat {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-22px, -18px) scale(1.12); }
-            100% { transform: translate(15px, -28px) scale(0.92); }
-        }
+        .bg-particles { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
 
-        .bg-particles {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        /* ---------------- 屏幕通用容器 ---------------- */
         .screen {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            z-index: 10;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s;
-            overflow-y: auto;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 20px; z-index: 10; opacity: 0; visibility: hidden;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s; overflow-y: auto;
         }
+        .screen.active { opacity: 1; visibility: visible; }
 
-        .screen.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        /* ---------------- 第一屏：欢迎卡片 ---------------- */
         .welcome-card {
-            position: relative;
-            background: rgba(255, 255, 255, 0.68);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1.5px solid rgba(255, 255, 255, 0.95);
-            border-radius: 28px;
-            padding: 48px 20px 60px 20px;
-            box-shadow: 0 15px 35px rgba(135, 90, 185, 0.15);
-            text-align: center;
-            width: 100%;
-            max-width: 360px;
+            position: relative; background: rgba(255, 255, 255, 0.68); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1.5px solid rgba(255, 255, 255, 0.95); border-radius: 28px; padding: 48px 20px 60px 20px;
+            box-shadow: 0 15px 35px rgba(135, 90, 185, 0.15); text-align: center; width: 100%; max-width: 360px;
             animation: cardAppear 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, floatCard 4s ease-in-out infinite 1s;
         }
-
-        @keyframes cardAppear {
-            0% { opacity: 0; transform: translateY(12px) scale(0.97); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
+        @keyframes cardAppear { 0% { opacity: 0; transform: translateY(12px) scale(0.97); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
         .welcome-title { font-size: 20px; font-weight: 700; color: #6a4891; margin-bottom: 8px; letter-spacing: 2px; }
         .welcome-name {
             font-size: 44px; font-weight: 900; letter-spacing: 3px; display: block; margin-top: 6px;
             background: linear-gradient(135deg, #2E0854 0%, #6B06C3 50%, #B800FF 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 4px 12px rgba(107, 6, 195, 0.3));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 4px 12px rgba(107, 6, 195, 0.3));
         }
         .sub-note { position: absolute; bottom: 20px; right: 24px; font-size: 11.5px; font-weight: 700; color: #8b68aa; opacity: 0.9; }
-        
-        /* 1.jpg 方形大圆角图片 */
+
         .tap-hint {
-            position: absolute;
-            bottom: 50px;
-            font-size: 13.5px;
-            font-weight: 700;
-            color: #7b53a6;
-            letter-spacing: 2px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            animation: pulseHint 2s infinite;
+            position: absolute; bottom: 50px; font-size: 13.5px; font-weight: 700; color: #7b53a6; letter-spacing: 2px;
+            display: flex; align-items: center; justify-content: center; gap: 8px; animation: pulseHint 2s infinite;
         }
+        .hint-avatar { width: 26px; height: 26px; border-radius: 8px; object-fit: cover; box-shadow: 0 3px 10px rgba(123, 83, 166, 0.3); border: 1.5px solid rgba(255, 255, 255, 0.9); display: inline-block; }
 
-        .hint-avatar {
-            width: 26px;
-            height: 26px;
-            border-radius: 8px;
-            object-fit: cover;
-            box-shadow: 0 3px 10px rgba(123, 83, 166, 0.3);
-            border: 1.5px solid rgba(255, 255, 255, 0.9);
-            display: inline-block;
-        }
-
-        /* ---------------- 第二屏：计时卡片 ---------------- */
         .timer-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1.5px solid rgba(255, 255, 255, 0.95);
-            border-radius: 28px;
-            padding: 28px 16px;
-            box-shadow: 0 15px 35px rgba(135, 90, 185, 0.15);
-            text-align: center;
-            width: 100%;
-            max-width: 360px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+            background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1.5px solid rgba(255, 255, 255, 0.95); border-radius: 28px; padding: 28px 16px;
+            box-shadow: 0 15px 35px rgba(135, 90, 185, 0.15); text-align: center; width: 100%; max-width: 360px;
+            display: flex; flex-direction: column; gap: 16px;
         }
-
         .section-block { display: flex; flex-direction: column; align-items: center; }
         .timer-header { font-size: 15px; font-weight: 900; color: #4a207a; letter-spacing: 1.5px; margin-bottom: 8px; }
-
         .flip-counter { display: flex; align-items: flex-start; justify-content: center; gap: 3px; width: 100%; perspective: 400px; }
         .counter-group { display: flex; flex-direction: column; align-items: center; }
         .digits { display: flex; gap: 2px; }
@@ -250,112 +125,56 @@
             animation: flowGradient 2.5s linear infinite; display: inline-block;
         }
 
-        /* 2.jpg 方形大圆角图片 */
         .memory-entry-btn {
             margin-top: 6px; padding: 12px 24px; border-radius: 20px;
             background: linear-gradient(135deg, #7b39ed 0%, #a855f7 100%);
             color: #ffffff; font-weight: 800; font-size: 14.5px; letter-spacing: 2px;
             box-shadow: 0 8px 20px rgba(123, 57, 237, 0.35); cursor: pointer;
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            animation: pulseHint 2s infinite;
+            display: flex; align-items: center; justify-content: center; gap: 8px; animation: pulseHint 2s infinite;
         }
         .memory-entry-btn:active { transform: scale(0.94); }
+        .btn-avatar { width: 22px; height: 22px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255, 255, 255, 0.9); box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: inline-block; vertical-align: middle; }
 
-        .btn-avatar {
-            width: 22px;
-            height: 22px;
-            border-radius: 6px;
-            object-fit: cover;
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            display: inline-block;
-            vertical-align: middle;
-        }
-
-        /* ---------------- 第三屏：回忆相册与检索 ---------------- */
         #screen3 { padding: 16px; overflow-y: auto; }
-        
         .gallery-wrapper {
-            position: relative;
-            width: 100%; min-height: 100%; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            max-width: 520px; margin: 0 auto;
+            position: relative; width: 100%; min-height: 100%; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; max-width: 520px; margin: 0 auto;
             transition: justify-content 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+        .gallery-wrapper.searched { justify-content: flex-start; padding-top: 20px; padding-bottom: 30px; }
 
-        .gallery-wrapper.searched {
-            justify-content: flex-start;
-            padding-top: 20px;
-            padding-bottom: 30px;
-        }
-
-        /* ✨ 右下角隐藏的 💖 圆形小按钮 */
         .corner-heart-btn {
-            position: absolute;
-            bottom: 24px;
-            right: 12px;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1.5px solid rgba(255, 255, 255, 0.95);
-            box-shadow: 0 8px 22px rgba(130, 70, 180, 0.22);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            cursor: pointer;
-            z-index: 50;
+            position: absolute; bottom: 24px; right: 12px; width: 44px; height: 44px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1.5px solid rgba(255, 255, 255, 0.95); box-shadow: 0 8px 22px rgba(130, 70, 180, 0.22);
+            display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; z-index: 50;
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
         }
-
-        .corner-heart-btn:hover {
-            transform: scale(1.18);
-            box-shadow: 0 12px 30px rgba(124, 58, 237, 0.35);
-        }
-
-        .corner-heart-btn:active {
-            transform: scale(0.92);
-        }
+        .corner-heart-btn:hover { transform: scale(1.18); box-shadow: 0 12px 30px rgba(124, 58, 237, 0.35); }
+        .corner-heart-btn:active { transform: scale(0.92); }
 
         .story-title {
-            font-family: 'Great Vibes', 'Dancing Script', cursive;
-            font-size: 27px;
-            font-weight: 700;
+            font-family: 'Great Vibes', 'Dancing Script', cursive; font-size: 27px; font-weight: 700;
             background: linear-gradient(135deg, #6b21a8 0%, #a855f7 50%, #d946ef 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 14px;
-            text-align: center;
-            letter-spacing: 1px;
-            animation: storyBreathing 3s ease-in-out infinite;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 14px; text-align: center; letter-spacing: 1px; animation: storyBreathing 3s ease-in-out infinite;
         }
-
         @keyframes storyBreathing {
             0%, 100% { opacity: 0.75; transform: scale(0.98); filter: drop-shadow(0 2px 4px rgba(124, 58, 237, 0.15)); }
             50% { opacity: 1; transform: scale(1.03); filter: drop-shadow(0 4px 12px rgba(192, 132, 252, 0.6)); }
         }
 
         .nav-header {
-            width: 100%;
-            padding: 10px 14px; display: flex; align-items: center; gap: 10px;
-            background: rgba(255, 255, 255, 0.82);
-            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            border-radius: 32px;
-            border: 1.5px solid rgba(255, 255, 255, 0.95);
-            box-shadow: 0 12px 30px rgba(120, 70, 180, 0.15);
-            z-index: 20;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            width: 100%; padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+            background: rgba(255, 255, 255, 0.82); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border-radius: 32px; border: 1.5px solid rgba(255, 255, 255, 0.95); box-shadow: 0 12px 30px rgba(120, 70, 180, 0.15);
+            z-index: 20; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-
         .back-icon-btn {
             width: 38px; height: 38px; border-radius: 50%; background: #ffffff;
             display: flex; align-items: center; justify-content: center; font-size: 20px; color: #5b21b6;
-            box-shadow: 0 4px 12px rgba(120, 80, 180, 0.12); cursor: pointer; flex-shrink: 0;
-            font-weight: 800;
+            box-shadow: 0 4px 12px rgba(120, 80, 180, 0.12); cursor: pointer; flex-shrink: 0; font-weight: 800;
         }
 
         .search-box-container {
@@ -364,18 +183,7 @@
             border: 1.5px solid rgba(190, 150, 230, 0.3); transition: border-color 0.3s;
         }
         .search-box-container:focus-within { border-color: #8b5cf6; }
-        
-        /* 3.jpg 方形大圆角图片 */
-        .search-custom-icon {
-            width: 22px;
-            height: 22px;
-            border-radius: 6px;
-            object-fit: cover;
-            margin-right: 8px;
-            flex-shrink: 0;
-            border: 1px solid rgba(190, 150, 230, 0.4);
-        }
-
+        .search-custom-icon { width: 22px; height: 22px; border-radius: 6px; object-fit: cover; margin-right: 8px; flex-shrink: 0; border: 1px solid rgba(190, 150, 230, 0.4); }
         .search-input { width: 100%; border: none; outline: none; background: transparent; font-size: 13.5px; font-weight: 700; color: #4c1d95; }
         .search-input::placeholder { color: #a78bfa; font-weight: 500; }
 
@@ -389,8 +197,7 @@
         .add-plus-btn {
             width: 40px; height: 40px; border-radius: 50%; background: #ffffff; color: #7c3aed;
             display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900;
-            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2); cursor: pointer; flex-shrink: 0;
-            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2); cursor: pointer; flex-shrink: 0; transition: transform 0.2s;
         }
         .add-plus-btn:active { transform: scale(0.9); }
 
@@ -399,15 +206,10 @@
 
         .photo-card {
             position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden;
-            background: #e9d5ff; box-shadow: 0 6px 18px rgba(110, 60, 160, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
-            cursor: pointer;
+            background: #e9d5ff; box-shadow: 0 6px 18px rgba(110, 60, 160, 0.12); border: 1px solid rgba(255, 255, 255, 0.8);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease; cursor: pointer;
         }
-        .photo-card:hover {
-            transform: scale(1.04);
-            box-shadow: 0 12px 30px rgba(124, 58, 237, 0.25);
-        }
+        .photo-card:hover { transform: scale(1.04); box-shadow: 0 12px 30px rgba(124, 58, 237, 0.25); }
         .photo-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .photo-tag {
             position: absolute; bottom: 6px; right: 8px; background: rgba(46, 16, 101, 0.65);
@@ -417,7 +219,6 @@
 
         .empty-hint { text-align: center; color: #8b5cf6; font-weight: 700; font-size: 14px; margin-top: 40px; line-height: 1.8; }
 
-        /* ---------------- 灯箱大图预览层 ---------------- */
         .lightbox-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(30, 10, 60, 0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
@@ -425,17 +226,13 @@
             opacity: 0; visibility: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .lightbox-overlay.show { opacity: 1; visibility: visible; }
-
         .lightbox-img {
-            max-width: 100%; max-height: 90vh; width: auto; height: auto;
-            object-fit: contain; border-radius: 18px;
-            box-shadow: 0 25px 60px rgba(50, 10, 90, 0.5);
-            border: 2px solid rgba(255, 255, 255, 0.85);
+            max-width: 100%; max-height: 90vh; width: auto; height: auto; object-fit: contain; border-radius: 18px;
+            box-shadow: 0 25px 60px rgba(50, 10, 90, 0.5); border: 2px solid rgba(255, 255, 255, 0.85);
             transform: scale(0.85); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .lightbox-overlay.show .lightbox-img { transform: scale(1); }
 
-        /* ---------------- 上传照片弹窗 ---------------- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(30, 10, 60, 0.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -443,98 +240,43 @@
             opacity: 0; visibility: hidden; transition: all 0.3s ease;
         }
         .modal-overlay.show { opacity: 1; visibility: visible; }
-
         .modal-card {
-            background: #faf6ff;
-            border-radius: 28px; border: 1.5px solid rgba(255, 255, 255, 0.9);
+            background: #faf6ff; border-radius: 28px; border: 1.5px solid rgba(255, 255, 255, 0.9);
             width: 100%; max-width: 360px; padding: 22px 20px; box-shadow: 0 20px 40px rgba(70, 20, 120, 0.25);
             display: flex; flex-direction: column; gap: 16px; transform: translateY(20px); transition: transform 0.3s ease;
         }
         .modal-overlay.show .modal-card { transform: translateY(0); }
-
         .modal-title-bar { display: flex; justify-content: space-between; align-items: center; }
-        
-        .modal-title-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
+        .modal-title-wrapper { display: flex; align-items: center; gap: 8px; }
         .modal-title { font-size: 18px; font-weight: 900; color: #4c1d95; letter-spacing: 1px; }
-        
-        /* 4.jpg 方形大圆角图片 */
-        .modal-title-avatar {
-            width: 20px;
-            height: 20px;
-            border-radius: 6px;
-            object-fit: cover;
-            border: 1px solid rgba(168, 85, 247, 0.4);
-            display: inline-block;
-            vertical-align: middle;
-        }
-
+        .modal-title-avatar { width: 20px; height: 20px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(168, 85, 247, 0.4); display: inline-block; vertical-align: middle; }
         .close-modal-btn { font-size: 18px; font-weight: 800; color: #9333ea; cursor: pointer; padding: 4px; }
 
         .form-row { display: flex; flex-direction: column; gap: 8px; text-align: left; }
         .form-label { font-size: 13px; font-weight: 800; color: #6b21a8; letter-spacing: 0.5px; }
 
-        /* ---------------- 🎰 3D 滚筒选择器 ---------------- */
-        .wheel-picker-wrapper {
-            position: relative; width: 100%; height: 130px; background: transparent;
-            border: none; display: flex; overflow: hidden; box-shadow: none;
-        }
-
-        .wheel-highlight-bar {
-            position: absolute; top: 48px; left: 0; right: 0; height: 34px;
-            background: rgba(225, 210, 250, 0.55); border-radius: 12px; pointer-events: none; z-index: 1;
-        }
-
-        .wheel-picker-wrapper::before,
-        .wheel-picker-wrapper::after {
-            content: ''; position: absolute; left: 0; width: 100%; height: 48px;
-            pointer-events: none; z-index: 2;
-        }
+        .wheel-picker-wrapper { position: relative; width: 100%; height: 130px; background: transparent; border: none; display: flex; overflow: hidden; box-shadow: none; }
+        .wheel-highlight-bar { position: absolute; top: 48px; left: 0; right: 0; height: 34px; background: rgba(225, 210, 250, 0.55); border-radius: 12px; pointer-events: none; z-index: 1; }
+        .wheel-picker-wrapper::before, .wheel-picker-wrapper::after { content: ''; position: absolute; left: 0; width: 100%; height: 48px; pointer-events: none; z-index: 2; }
         .wheel-picker-wrapper::before { top: 0; background: linear-gradient(to bottom, #faf6ff 15%, rgba(250, 246, 255, 0)); }
         .wheel-picker-wrapper::after { bottom: 0; background: linear-gradient(to top, #faf6ff 15%, rgba(250, 246, 255, 0)); }
-
-        .wheel-col {
-            flex: 1; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory;
-            scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch;
-            z-index: 3; padding: 48px 0; cursor: grab; scroll-behavior: smooth;
-        }
+        .wheel-col { flex: 1; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; z-index: 3; padding: 48px 0; cursor: grab; scroll-behavior: smooth; }
         .wheel-col:active { cursor: grabbing; }
         .wheel-col::-webkit-scrollbar { display: none; }
+        .wheel-item { height: 34px; line-height: 34px; text-align: center; font-size: 15px; font-weight: 800; color: #4c1d95; scroll-snap-align: center; font-family: 'Montserrat', 'Noto Sans SC', sans-serif; will-change: transform, opacity; transform: translateZ(0); cursor: pointer; }
 
-        .wheel-item {
-            height: 34px; line-height: 34px; text-align: center; font-size: 15px; font-weight: 800;
-            color: #4c1d95; scroll-snap-align: center; font-family: 'Montserrat', 'Noto Sans SC', sans-serif;
-            will-change: transform, opacity; transform: translateZ(0); cursor: pointer;
-        }
-
-        .upload-dropzone {
-            width: 100%; height: 95px; border-radius: 16px; border: 2px dashed rgba(168, 85, 247, 0.4);
-            background: rgba(245, 237, 255, 0.6); display: flex; flex-direction: column;
-            align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden;
-            transition: background 0.3s;
-        }
+        .upload-dropzone { width: 100%; height: 95px; border-radius: 16px; border: 2px dashed rgba(168, 85, 247, 0.4); background: rgba(245, 237, 255, 0.6); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; transition: background 0.3s; }
         .upload-dropzone:hover { background: rgba(237, 222, 255, 0.8); }
         .upload-icon-text { font-size: 12.5px; font-weight: 700; color: #7c3aed; text-align: center; }
         .upload-preview-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; display: none; }
 
-        .submit-upload-btn {
-            width: 100%; height: 44px; border-radius: 14px; border: none;
-            background: linear-gradient(135deg, #7c3aed 0%, #c084fc 100%);
-            color: #ffffff; font-weight: 900; font-size: 15px; letter-spacing: 1px;
-            box-shadow: 0 6px 18px rgba(124, 58, 237, 0.3); cursor: pointer; margin-top: 2px;
-        }
+        .submit-upload-btn { width: 100%; height: 44px; border-radius: 14px; border: none; background: linear-gradient(135deg, #7c3aed 0%, #c084fc 100%); color: #ffffff; font-weight: 900; font-size: 15px; letter-spacing: 1px; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.3); cursor: pointer; margin-top: 2px; }
         .submit-upload-btn:active { transform: scale(0.97); }
 
-        /* Keyframes */
         @keyframes flowGradient { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
         @keyframes floatCard { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         @keyframes pulseHint { 0%, 100% { opacity: 0.5; transform: scale(0.98); } 50% { opacity: 1; transform: scale(1.02); } }
 
-        /* 手机端优化 */
         @media (max-width: 768px) {
             .bg-glow-container { display: none !important; }
             .welcome-card, .timer-card { max-width: 92vw; padding-left: 12px; padding-right: 12px; }
@@ -547,41 +289,35 @@
 </head>
 <body>
 
-    <!-- 🎵 5.jpg 圆形旋转音乐按钮 -->
     <div class="music-disc-btn paused" id="musicBtn" title="开关背景音乐">
         <img src="5.jpg" class="music-avatar-img" alt="5">
     </div>
     <audio id="bgm" src="bgm.mp3" loop></audio>
 
-    <!-- 背景多层柔和光晕 -->
     <div class="bg-glow-container">
         <div class="glow-orb glow-orb-1"></div>
         <div class="glow-orb glow-orb-2"></div>
         <div class="glow-orb glow-orb-3"></div>
     </div>
 
-    <!-- 背景微光粒子 -->
     <div class="bg-particles" id="particles"></div>
 
-    <!-- 第一屏：欢迎页 -->
+    <!-- 第一屏 -->
     <div class="screen active" id="screen1">
         <div class="welcome-card">
             <p class="welcome-title">欢迎你！</p>
             <span class="welcome-name">生日快乐</span>
             <span class="sub-note">谨记张慧冉第19个生日</span>
         </div>
-        
-        <!-- 1.jpg 方形大圆角图片 -->
         <div class="tap-hint">
             点击屏幕以继续
             <img src="1.jpg" class="hint-avatar" alt="1">
         </div>
     </div>
 
-    <!-- 第二屏：高精度计时器 -->
+    <!-- 第二屏 -->
     <div class="screen" id="screen2">
         <div class="timer-card">
-            
             <div class="section-block">
                 <p class="timer-header">你来到这个世界已经：</p>
                 <div class="flip-counter">
@@ -596,43 +332,32 @@
                     <div class="counter-group"><div class="digits"><div class="digit-card" id="s1">0</div><div class="digit-card" id="s2">0</div></div><span class="group-label">SECOND</span></div>
                 </div>
             </div>
-
             <div class="divider"></div>
-
             <div class="section-block">
                 <p class="timer-header">存在这个世界上的天数：</p>
                 <div class="precise-card"><span class="gradient-flow-num" id="preciseDays">0.0 天</span></div>
             </div>
-
             <div class="divider"></div>
-
             <div class="section-block">
                 <p class="timer-header">你已经：</p>
                 <div class="precise-card"><span class="gradient-flow-num" id="preciseAge">19.00000000 岁</span></div>
             </div>
-
-            <!-- 2.jpg 方形大圆角图片 -->
             <div class="memory-entry-btn" id="toPage3Btn">
                 开启回忆... 
                 <img src="2.jpg" class="btn-avatar" alt="2">
             </div>
-
         </div>
     </div>
 
-    <!-- 第三屏：回忆检索与相册墙 -->
+    <!-- 第三屏 -->
     <div class="screen" id="screen3">
         <div class="gallery-wrapper" id="galleryWrapper">
-            
-            <!-- ✨ 右下角藏着的 💖 惊喜小按钮 -->
             <div class="corner-heart-btn" id="cornerHeartBtn" title="专属惊喜">💖</div>
-
             <div class="story-title">Every little piece of our story</div>
 
             <div class="nav-header">
                 <div class="back-icon-btn" id="backToPage2">‹</div>
                 <div class="search-box-container">
-                    <!-- 3.jpg 方形大圆角图片 -->
                     <img src="3.jpg" class="search-custom-icon" alt="3">
                     <input type="text" class="search-input" id="searchInput" placeholder="输入日期 (如 3.4) 检索...">
                     <div class="search-submit-btn" id="searchSubmitBtn">搜索</div>
@@ -646,27 +371,23 @@
                     🌸 暂无该日期的回忆照片<br><span style="font-size: 12px; opacity: 0.8;">点击右上角 + 按钮上传新的照片</span>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <!-- 灯箱大图预览层 -->
     <div class="lightbox-overlay" id="lightboxOverlay">
         <img class="lightbox-img" id="lightboxImg" alt="大图预览">
     </div>
 
-    <!-- ✨ 6.jpg 专用大图预览层（原画质、原比例、平滑过渡） -->
     <div class="lightbox-overlay" id="heartLightboxOverlay">
         <img class="lightbox-img" src="6.jpg" alt="惊喜大图">
     </div>
 
-    <!-- 上传照片弹窗 -->
+    <!-- 上传弹窗 -->
     <div class="modal-overlay" id="uploadModal">
         <div class="modal-card">
             <div class="modal-title-bar">
                 <div class="modal-title-wrapper">
                     <span class="modal-title">添加照片</span>
-                    <!-- 4.jpg 方形大圆角图片 -->
                     <img src="4.jpg" class="modal-title-avatar" alt="4">
                 </div>
                 <span class="close-modal-btn" id="closeUploadModalBtn">✕</span>
@@ -694,16 +415,23 @@
                 </div>
             </div>
 
-            <button class="submit-upload-btn" id="savePhotoBtn">保存</button>
+            <button class="submit-upload-btn" id="savePhotoBtn">保存上传</button>
         </div>
     </div>
 
     <script>
+        // ---------------- ⚡ SUPABASE 云端数据库与存储配置 ----------------
+        const SUPABASE_URL = 'https://zuijertizajaelafpsir.supabase.co';
+        // ⚠️ 请将下方的字符串替换为您在 Supabase Settings -> API 里复制的 anon public key 密钥
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1aWplcnRpemFqYWVsYWZwc2lyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4OTI1NzQsImV4cCI6MjEwMDQ2ODU3NH0.KtbHXcVPl0HoSnNAVzZZ7NvIwZanFJjPC6Zop3TqNuY';
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         const BIRTH_DATE = new Date(2007, 6, 28, 12, 10, 0); 
         const MS_PER_DAY = 1000 * 60 * 60 * 24;
         const MS_PER_YEAR = MS_PER_DAY * 365.2425;
 
-        // ---------------- 🎵 BGM 背景音乐与淡入淡出逻辑 ----------------
+        // BGM 逻辑
         const bgm = document.getElementById('bgm');
         const musicBtn = document.getElementById('musicBtn');
         const TARGET_VOLUME = 0.35; 
@@ -747,49 +475,10 @@
             }, 50);
         }
 
-        function toggleMusic() {
-            if (isMusicPlaying) {
-                fadeOutBGM();
-            } else {
-                fadeInBGM();
-            }
-        }
+        musicBtn.addEventListener('click', (e) => { e.stopPropagation(); isMusicPlaying ? fadeOutBGM() : fadeInBGM(); });
+        document.addEventListener('pointerdown', function handleFirst() { if(!isMusicPlaying) fadeInBGM(); document.removeEventListener('pointerdown', handleFirst); });
 
-        musicBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            toggleMusic();
-        });
-
-        function handleFirstInteraction() {
-            if (!isMusicPlaying) {
-                fadeInBGM();
-            }
-            document.removeEventListener('pointerdown', handleFirstInteraction);
-        }
-        document.addEventListener('pointerdown', handleFirstInteraction);
-
-        // ---------------- IndexedDB 本地数据库 ----------------
-        let db = null;
-        function initDB() {
-            const request = indexedDB.open("MemoriesDB", 1);
-            request.onupgradeneeded = function(e) {
-                db = e.target.result;
-                if (!db.objectStoreNames.contains("photos")) {
-                    db.createObjectStore("photos", { keyPath: "id", autoIncrement: true });
-                }
-            };
-            request.onsuccess = function(e) {
-                db = e.target.result;
-            };
-        }
-        initDB();
-
-        const mockPhotos = [
-            { dateStr: "3.4", imgUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&auto=format&fit=crop" },
-            { dateStr: "3.4", imgUrl: "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop" }
-        ];
-
-        // ---------------- 🔊 经典合成音效与爱心微光粒子散开特效 ----------------
+        // 点击粒子效果
         let audioCtx = null;
         function playCuteSound() {
             try {
@@ -807,73 +496,48 @@
             } catch(e) {}
         }
 
-        function triggerClickEffects(e) {
+        document.addEventListener('pointerdown', (e) => {
             playCuteSound();
             const x = e.clientX || (e.touches && e.touches[0].clientX);
             const y = e.clientY || (e.touches && e.touches[0].clientY);
             if (!x || !y) return;
-
             const icons = ['💗', '✨', '🌸', '💖', '⭐'];
             for (let i = 0; i < 6; i++) {
                 const p = document.createElement('div');
                 p.className = 'click-particle';
                 p.innerText = icons[Math.floor(Math.random() * icons.length)];
-                p.style.left = x + 'px';
-                p.style.top = y + 'px';
-                
+                p.style.left = x + 'px'; p.style.top = y + 'px';
                 const angle = Math.random() * Math.PI * 2;
                 const dist = Math.random() * 55 + 20;
                 p.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
                 p.style.setProperty('--dy', `${Math.sin(angle) * dist - 20}px`);
-
                 document.body.appendChild(p);
                 setTimeout(() => p.remove(), 700);
             }
-        }
+        });
 
-        document.addEventListener('pointerdown', triggerClickEffects);
-
-        // ---------------- 页面切换逻辑 ----------------
+        // 页面切换
         const screen1 = document.getElementById('screen1');
         const screen2 = document.getElementById('screen2');
         const screen3 = document.getElementById('screen3');
-
         let screen1Clicked = false;
         screen1.addEventListener('click', function() {
             if (!screen1Clicked) {
                 screen1Clicked = true;
                 screen1.classList.remove('active');
-                setTimeout(() => {
-                    screen2.classList.add('active');
-                    startLiveTimer(); 
-                }, 300);
+                setTimeout(() => { screen2.classList.add('active'); startLiveTimer(); }, 300);
             }
         });
+        document.getElementById('toPage3Btn').addEventListener('click', (e) => { e.stopPropagation(); screen2.classList.remove('active'); setTimeout(() => screen3.classList.add('active'), 300); });
+        document.getElementById('backToPage2').addEventListener('click', () => { screen3.classList.remove('active'); setTimeout(() => screen2.classList.add('active'), 300); });
 
-        document.getElementById('toPage3Btn').addEventListener('click', function(e) {
-            e.stopPropagation();
-            screen2.classList.remove('active');
-            setTimeout(() => {
-                screen3.classList.add('active');
-            }, 300);
-        });
-
-        document.getElementById('backToPage2').addEventListener('click', function() {
-            screen3.classList.remove('active');
-            setTimeout(() => { screen2.classList.add('active'); }, 300);
-        });
-
-        // ---------------- 高精实时计时 (120 FPS) ----------------
+        // 计时器逻辑
         function setFlipDigit(id, newChar) {
             const el = document.getElementById(id);
             if (el && el.innerText !== newChar) {
-                el.innerText = newChar;
-                el.classList.remove('flip-tick');
-                void el.offsetWidth;
-                el.classList.add('flip-tick');
+                el.innerText = newChar; el.classList.remove('flip-tick'); void el.offsetWidth; el.classList.add('flip-tick');
             }
         }
-
         function startLiveTimer() {
             function update() {
                 const now = new Date();
@@ -881,10 +545,7 @@
                 if (diffMs >= 0) {
                     let years = now.getFullYear() - BIRTH_DATE.getFullYear();
                     let birthThisYear = new Date(now.getFullYear(), BIRTH_DATE.getMonth(), BIRTH_DATE.getDate(), BIRTH_DATE.getHours(), BIRTH_DATE.getMinutes(), BIRTH_DATE.getSeconds());
-                    if (now < birthThisYear) {
-                        years--;
-                        birthThisYear = new Date(now.getFullYear() - 1, BIRTH_DATE.getMonth(), BIRTH_DATE.getDate(), BIRTH_DATE.getHours(), BIRTH_DATE.getMinutes(), BIRTH_DATE.getSeconds());
-                    }
+                    if (now < birthThisYear) { years--; birthThisYear = new Date(now.getFullYear() - 1, BIRTH_DATE.getMonth(), BIRTH_DATE.getDate(), BIRTH_DATE.getHours(), BIRTH_DATE.getMinutes(), BIRTH_DATE.getSeconds()); }
                     const diffDaysTotal = Math.floor((now - birthThisYear) / MS_PER_DAY);
                     const hours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
                     const minutes = Math.floor((diffMs / (1000 * 60)) % 60);
@@ -910,7 +571,7 @@
             requestAnimationFrame(update);
         }
 
-        // ---------------- 🎰 3D 滚筒选择器 ----------------
+        // 滚筒选择器
         const yearWheel = document.getElementById('yearWheel');
         const monthWheel = document.getElementById('monthWheel');
         const dayWheel = document.getElementById('dayWheel');
@@ -920,95 +581,42 @@
         function initWheelPicker() {
             yearWheel.innerHTML = '';
             for (let y = 2000; y <= 2030; y++) {
-                const item = document.createElement('div');
-                item.className = 'wheel-item';
-                item.dataset.val = y;
-                item.innerText = y + ' 年';
-                yearWheel.appendChild(item);
+                const item = document.createElement('div'); item.className = 'wheel-item'; item.dataset.val = y; item.innerText = y + ' 年'; yearWheel.appendChild(item);
             }
-
             monthWheel.innerHTML = '';
             for (let m = 1; m <= 12; m++) {
-                const item = document.createElement('div');
-                item.className = 'wheel-item';
-                item.dataset.val = m;
-                item.innerText = String(m).padStart(2, '0') + ' 月';
-                monthWheel.appendChild(item);
+                const item = document.createElement('div'); item.className = 'wheel-item'; item.dataset.val = m; item.innerText = String(m).padStart(2, '0') + ' 月'; monthWheel.appendChild(item);
             }
-
             updateDaysWheel(2026, 7, true);
-
             [yearWheel, monthWheel, dayWheel].forEach(col => {
                 bindWheelDragAndClick(col);
-                
                 let isTicking = false;
                 col.addEventListener('scroll', () => {
-                    if (!isTicking) {
-                        requestAnimationFrame(() => {
-                            updateWheelItemStylesFast(col);
-                            isTicking = false;
-                        });
-                        isTicking = true;
-                    }
+                    if (!isTicking) { requestAnimationFrame(() => { updateWheelItemStylesFast(col); isTicking = false; }); isTicking = true; }
                 }, { passive: true });
             });
         }
 
         function bindWheelDragAndClick(colEl) {
-            let isMouseDown = false;
-            let startY = 0;
-            let startScrollTop = 0;
-            let isDragged = false;
-
-            colEl.addEventListener('mousedown', (e) => {
-                isMouseDown = true;
-                isDragged = false;
-                startY = e.clientY;
-                startScrollTop = colEl.scrollTop;
-                colEl.style.scrollSnapType = 'none';
-            });
-
-            window.addEventListener('mousemove', (e) => {
-                if (!isMouseDown) return;
-                const dy = e.clientY - startY;
-                if (Math.abs(dy) > 3) isDragged = true;
-                colEl.scrollTop = startScrollTop - dy;
-            });
-
-            window.addEventListener('mouseup', () => {
-                if (!isMouseDown) return;
-                isMouseDown = false;
-                colEl.style.scrollSnapType = 'y mandatory';
-                const targetIdx = Math.round(colEl.scrollTop / ITEM_HEIGHT);
-                colEl.scrollTo({ top: targetIdx * ITEM_HEIGHT, behavior: 'smooth' });
-            });
-
+            let isMouseDown = false, startY = 0, startScrollTop = 0, isDragged = false;
+            colEl.addEventListener('mousedown', (e) => { isMouseDown = true; isDragged = false; startY = e.clientY; startScrollTop = colEl.scrollTop; colEl.style.scrollSnapType = 'none'; });
+            window.addEventListener('mousemove', (e) => { if (!isMouseDown) return; const dy = e.clientY - startY; if (Math.abs(dy) > 3) isDragged = true; colEl.scrollTop = startScrollTop - dy; });
+            window.addEventListener('mouseup', () => { if (!isMouseDown) return; isMouseDown = false; colEl.style.scrollSnapType = 'y mandatory'; const targetIdx = Math.round(colEl.scrollTop / ITEM_HEIGHT); colEl.scrollTo({ top: targetIdx * ITEM_HEIGHT, behavior: 'smooth' }); });
             colEl.addEventListener('click', (e) => {
                 if (isDragged) return;
                 const item = e.target.closest('.wheel-item');
-                if (item) {
-                    const items = Array.from(colEl.children);
-                    const index = items.indexOf(item);
-                    if (index !== -1) {
-                        colEl.scrollTo({ top: index * ITEM_HEIGHT, behavior: 'smooth' });
-                    }
-                }
+                if (item) { const index = Array.from(colEl.children).indexOf(item); if (index !== -1) colEl.scrollTo({ top: index * ITEM_HEIGHT, behavior: 'smooth' }); }
             });
         }
 
         function updateWheelItemStylesFast(colEl) {
             const currentIdx = colEl.scrollTop / ITEM_HEIGHT;
             const items = colEl.children;
-            const len = items.length;
-
-            for (let i = 0; i < len; i++) {
+            for (let i = 0; i < items.length; i++) {
                 const dist = Math.abs(i - currentIdx) * ITEM_HEIGHT;
                 const ratio = Math.min(dist / 80, 1);
-                const scale = 1.05 - ratio * 0.25;
-                const opacity = 1 - ratio * 0.72;
-
-                items[i].style.transform = `scale(${scale.toFixed(3)}) translateZ(0)`;
-                items[i].style.opacity = opacity.toFixed(3);
+                items[i].style.transform = `scale(${(1.05 - ratio * 0.25).toFixed(3)}) translateZ(0)`;
+                items[i].style.opacity = (1 - ratio * 0.72).toFixed(3);
             }
         }
 
@@ -1017,18 +625,11 @@
             if (!forceUpdate && totalDays === currentTotalDays) return;
             currentTotalDays = totalDays;
             const currentSelectedDay = getWheelValue(dayWheel) || 28;
-
             dayWheel.innerHTML = '';
             for (let d = 1; d <= totalDays; d++) {
-                const item = document.createElement('div');
-                item.className = 'wheel-item';
-                item.dataset.val = d;
-                item.innerText = String(d).padStart(2, '0') + ' 日';
-                dayWheel.appendChild(item);
+                const item = document.createElement('div'); item.className = 'wheel-item'; item.dataset.val = d; item.innerText = String(d).padStart(2, '0') + ' 日'; dayWheel.appendChild(item);
             }
-
-            const targetDay = Math.min(currentSelectedDay, totalDays);
-            scrollWheelToValue(dayWheel, targetDay);
+            scrollWheelToValue(dayWheel, Math.min(currentSelectedDay, totalDays));
         }
 
         function getWheelValue(colEl) {
@@ -1040,28 +641,19 @@
         function scrollWheelToValue(colEl, val) {
             const items = Array.from(colEl.children);
             const index = items.findIndex(item => parseInt(item.dataset.val) === parseInt(val));
-            if (index !== -1) {
-                colEl.scrollTop = index * ITEM_HEIGHT;
-                requestAnimationFrame(() => updateWheelItemStylesFast(colEl));
-            }
+            if (index !== -1) { colEl.scrollTop = index * ITEM_HEIGHT; requestAnimationFrame(() => updateWheelItemStylesFast(colEl)); }
         }
 
         let wheelScrollTimer = null;
         function handleYearMonthChange() {
             clearTimeout(wheelScrollTimer);
-            wheelScrollTimer = setTimeout(() => {
-                const y = getWheelValue(yearWheel) || 2026;
-                const m = getWheelValue(monthWheel) || 7;
-                updateDaysWheel(y, m);
-            }, 120);
+            wheelScrollTimer = setTimeout(() => { updateDaysWheel(getWheelValue(yearWheel) || 2026, getWheelValue(monthWheel) || 7); }, 120);
         }
-
         yearWheel.addEventListener('scroll', handleYearMonthChange, { passive: true });
         monthWheel.addEventListener('scroll', handleYearMonthChange, { passive: true });
-
         initWheelPicker();
 
-        // ---------------- 相册检索与平滑灯箱大图 ----------------
+        // ---------------- 相册检索与 SUPABASE 交互逻辑 ----------------
         const galleryWrapper = document.getElementById('galleryWrapper');
         const photoGrid = document.getElementById('photoGrid');
         const searchInput = document.getElementById('searchInput');
@@ -1071,47 +663,34 @@
 
         const lightboxOverlay = document.getElementById('lightboxOverlay');
         const lightboxImg = document.getElementById('lightboxImg');
-
-        // ✨ 6.jpg 灯箱控制逻辑
         const cornerHeartBtn = document.getElementById('cornerHeartBtn');
         const heartLightboxOverlay = document.getElementById('heartLightboxOverlay');
 
-        cornerHeartBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            heartLightboxOverlay.classList.add('show');
-        });
+        cornerHeartBtn.addEventListener('click', (e) => { e.stopPropagation(); heartLightboxOverlay.classList.add('show'); });
+        heartLightboxOverlay.addEventListener('click', () => heartLightboxOverlay.classList.remove('show'));
 
-        heartLightboxOverlay.addEventListener('click', () => {
-            heartLightboxOverlay.classList.remove('show');
-        });
+        function normalizeDateQuery(str) { return str ? str.replace(/月/g, '.').replace(/日/g, '').replace(/-/g, '.').trim() : ""; }
 
-        function normalizeDateQuery(str) {
-            if (!str) return "";
-            return str.replace(/月/g, '.').replace(/日/g, '').replace(/-/g, '.').trim();
-        }
-
-        function executeSearch() {
+        async function executeSearch() {
             const query = normalizeDateQuery(searchInput.value);
-            if (!query) {
-                alert("请输入要检索的日期（例如 3.4）");
-                return;
-            }
+            if (!query) { alert("请输入要检索的日期（例如 3.4）"); return; }
 
             galleryWrapper.classList.add('searched');
             galleryContent.style.display = "block";
-            photoGrid.innerHTML = "";
+            photoGrid.innerHTML = "<div style='grid-column: 1/-1; text-align:center; color:#8b5cf6;'>☁️ 正在读取云端照片...</div>";
 
-            if (!db) return;
-            const transaction = db.transaction(["photos"], "readonly");
-            const store = transaction.objectStore("photos");
-            const getAllReq = store.getAll();
+            try {
+                // 从 Supabase 数据库拉取所有照片
+                const { data: cloudPhotos, error } = await supabaseClient
+                    .from('photos')
+                    .select('*')
+                    .order('created_at', { ascending: false });
 
-            getAllReq.onsuccess = function() {
-                let userPhotos = getAllReq.result || [];
-                let allPhotos = [...mockPhotos, ...userPhotos];
+                if (error) throw error;
 
-                let filtered = allPhotos.filter(item => {
-                    const itemDate = normalizeDateQuery(item.dateStr);
+                photoGrid.innerHTML = "";
+                let filtered = (cloudPhotos || []).filter(item => {
+                    const itemDate = normalizeDateQuery(item.date_str);
                     return itemDate.includes(query) || query.includes(itemDate);
                 });
 
@@ -1122,36 +701,23 @@
                     filtered.forEach(photo => {
                         const card = document.createElement('div');
                         card.className = 'photo-card';
-                        card.innerHTML = `
-                            <img src="${photo.imgUrl}" alt="回忆照片">
-                            <span class="photo-tag">${photo.dateStr}</span>
-                        `;
-                        
-                        card.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            lightboxImg.src = photo.imgUrl;
-                            lightboxOverlay.classList.add('show');
-                        });
-
+                        card.innerHTML = `<img src="${photo.img_url}" alt="回忆照片"><span class="photo-tag">${photo.date_str}</span>`;
+                        card.addEventListener('click', (e) => { e.stopPropagation(); lightboxImg.src = photo.img_url; lightboxOverlay.classList.add('show'); });
                         photoGrid.appendChild(card);
                     });
                 }
-            };
+            } catch (err) {
+                console.error(err);
+                photoGrid.innerHTML = "<div style='grid-column: 1/-1; text-align:center; color:#e11d48;'>读取失败，请检查 Supabase 密钥配置</div>";
+            }
         }
 
         searchSubmitBtn.addEventListener('click', executeSearch);
-        searchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') executeSearch();
-        });
+        searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') executeSearch(); });
+        lightboxOverlay.addEventListener('click', () => lightboxOverlay.classList.remove('show'));
+        lightboxImg.addEventListener('click', (e) => e.stopPropagation());
 
-        lightboxOverlay.addEventListener('click', () => {
-            lightboxOverlay.classList.remove('show');
-        });
-        lightboxImg.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
-
-        // ---------------- 上传照片弹窗 ----------------
+        // ---------------- ☁️ SUPABASE 上传逻辑 ----------------
         const uploadModal = document.getElementById('uploadModal');
         const openUploadModalBtn = document.getElementById('openUploadModalBtn');
         const closeUploadModalBtn = document.getElementById('closeUploadModalBtn');
@@ -1161,15 +727,11 @@
         const uploadText = document.getElementById('uploadText');
         const savePhotoBtn = document.getElementById('savePhotoBtn');
 
-        let currentSelectedBase64 = null;
+        let selectedFile = null;
 
         openUploadModalBtn.addEventListener('click', () => {
             uploadModal.classList.add('show');
-            setTimeout(() => {
-                scrollWheelToValue(yearWheel, 2026);
-                scrollWheelToValue(monthWheel, 7);
-                scrollWheelToValue(dayWheel, 28);
-            }, 100);
+            setTimeout(() => { scrollWheelToValue(yearWheel, 2026); scrollWheelToValue(monthWheel, 7); scrollWheelToValue(dayWheel, 28); }, 100);
         });
 
         closeUploadModalBtn.addEventListener('click', () => uploadModal.classList.remove('show'));
@@ -1178,55 +740,75 @@
         fileInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
+                selectedFile = file;
                 const reader = new FileReader();
-                reader.onload = function(evt) {
-                    currentSelectedBase64 = evt.target.result;
-                    previewImg.src = currentSelectedBase64;
-                    previewImg.style.display = 'block';
-                    uploadText.style.display = 'none';
-                };
+                reader.onload = function(evt) { previewImg.src = evt.target.result; previewImg.style.display = 'block'; uploadText.style.display = 'none'; };
                 reader.readAsDataURL(file);
             }
         });
 
-        savePhotoBtn.addEventListener('click', function() {
-            if (!currentSelectedBase64) {
-                alert("请选择要上传的照片！");
-                return;
-            }
+        savePhotoBtn.addEventListener('click', async function() {
+            if (!selectedFile) { alert("请选择要上传的照片！"); return; }
 
             const selectedMonth = getWheelValue(monthWheel) || 7;
             const selectedDay = getWheelValue(dayWheel) || 28;
             const formattedDateStr = `${selectedMonth}.${selectedDay}`;
 
-            const transaction = db.transaction(["photos"], "readwrite");
-            const store = transaction.objectStore("photos");
-            store.add({
-                dateStr: formattedDateStr,
-                imgUrl: currentSelectedBase64,
-                timestamp: Date.now()
-            });
+            savePhotoBtn.innerText = "上传中...";
+            savePhotoBtn.disabled = true;
 
-            transaction.oncomplete = function() {
+            try {
+                // 1. 生成唯一文件名上传至 Storage 'photos' 桶
+                const fileExt = selectedFile.name.split('.').pop();
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+
+                const { data: uploadData, error: uploadError } = await supabaseClient
+                    .storage
+                    .from('photos')
+                    .upload(fileName, selectedFile);
+
+                if (uploadError) throw uploadError;
+
+                // 2. 获取图片的直链 URL
+                const { data: publicUrlData } = supabaseClient
+                    .storage
+                    .from('photos')
+                    .getPublicUrl(fileName);
+
+                const publicUrl = publicUrlData.publicUrl;
+
+                // 3. 将图片直链与日期保存到 'photos' 数据表
+                const { error: dbError } = await supabaseClient
+                    .from('photos')
+                    .insert([{ img_url: publicUrl, date_str: formattedDateStr }]);
+
+                if (dbError) throw dbError;
+
+                alert("✨ 照片成功同步上传至云端！所有人均可访问！");
                 uploadModal.classList.remove('show');
-                currentSelectedBase64 = null;
+                selectedFile = null;
                 previewImg.style.display = 'none';
                 uploadText.style.display = 'block';
                 fileInput.value = '';
-                
+
                 searchInput.value = formattedDateStr;
                 executeSearch();
-            };
+
+            } catch (err) {
+                alert("上传失败: " + (err.message || "请检查网络或 Supabase 配置"));
+            } finally {
+                savePhotoBtn.innerText = "保存上传";
+                savePhotoBtn.disabled = false;
+            }
         });
 
-        // 生成背景微光粒子
+        // 粒子背景
         const particlesContainer = document.getElementById('particles');
         for (let i = 0; i < 20; i++) {
             const particle = document.createElement('div');
             particle.className = 'particle';
             const size = Math.random() * 8 + 4;
-            particle.style.width = size + 'px';
-            particle.style.height = size + 'px';
+            particle.style.width = size + 'px'; particle.style.height = size + 'px';
             particle.style.left = Math.random() * 100 + 'vw';
             particle.style.animationDelay = (Math.random() * 8) + 's';
             particle.style.animationDuration = (Math.random() * 6 + 6) + 's';
