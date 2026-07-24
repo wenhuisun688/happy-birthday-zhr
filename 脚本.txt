@@ -1,0 +1,31 @@
+$photosDir = "photos"
+if (Test-Path $photosDir) {
+    # 1. 自动清除照片文件名里的空格和括号，替换为标准的下划线
+    Get-ChildItem -Path $photosDir | Where-Object { $_.Extension -match '\.(jpg|jpeg|png|webp|gif|heic)$' } | ForEach-Object {
+        $cleanName = $_.Name -replace '\s+', '' -replace '\(', '_' -replace '\)', ''
+        if ($_.Name -ne $cleanName) {
+            Rename-Item -Path $_.FullName -NewName $cleanName
+        }
+    }
+
+    # 2. 重新扫描生成规范的 photos.json
+    $files = Get-ChildItem -Path $photosDir | Where-Object { $_.Extension -match '\.(jpg|jpeg|png|webp|gif|heic)$' } | Sort-Object Name
+    $result = @()
+    foreach ($f in $files) {
+        $rawName = ($f.BaseName -split '_')[0].Trim()
+        $parts = $rawName -split '\.'
+        if ($parts.Count -eq 2) {
+            $dateStr = "26." + $rawName
+        } else {
+            $dateStr = $rawName
+        }
+        $result += [PSCustomObject]@{
+            img_url = "photos/$($f.Name)"
+            date_str = $dateStr
+        }
+    }
+    $result | ConvertTo-Json -Depth 2 | Out-File -FilePath "photos.json" -Encoding utf8
+    Write-Host "✅ 规范化重命名完成！已成功更新 photos.json！" -ForegroundColor Green
+} else {
+    Write-Host "❌ 未找到 photos 文件夹！" -ForegroundColor Red
+}
