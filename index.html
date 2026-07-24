@@ -16,17 +16,13 @@
         
         body, html {
             width: 100%; height: 100%;
-            overflow: hidden;
             font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
             background: linear-gradient(135deg, #f5edff 0%, #e8d7ff 50%, #eedfff 100%);
             color: #4a2e6b;
             user-select: none;
             -webkit-user-select: none;
-            animation: fadeInBody 0.9s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-            will-change: opacity;
+            overflow: hidden;
         }
-
-        @keyframes fadeInBody { 0% { opacity: 0; } 100% { opacity: 1; } }
 
         /* ---------------- 🎵 5.jpg 右上角圆形匀速旋转音乐按钮 ---------------- */
         .music-disc-btn {
@@ -406,7 +402,7 @@
         <img class="lightbox-img" src="6.jpg" alt="惊喜大图">
     </div>
 
-    <!-- 上传弹窗（已恢复图片选择功能） -->
+    <!-- 上传弹窗 -->
     <div class="modal-overlay" id="uploadModal">
         <div class="modal-card">
             <div class="modal-title-bar">
@@ -515,7 +511,7 @@
         document.addEventListener('pointerdown', handleFirstTouch);
         document.addEventListener('touchstart', handleFirstTouch, { passive: true });
 
-        // 点击音效与粒子
+        // 点击音效与微光粒子
         let audioCtx = null;
         function playCuteSound() {
             try {
@@ -733,7 +729,7 @@
 
         initDB().catch(console.error);
 
-        // ---------------- 相册检索与年份匹配 ----------------
+        // ---------------- 相册检索与精确日期匹配 ----------------
         const galleryWrapper = document.getElementById('galleryWrapper');
         const photoGrid = document.getElementById('photoGrid');
         const searchInput = document.getElementById('searchInput');
@@ -751,25 +747,49 @@
 
         let localPhotosCache = null;
 
+        // 🔥 精确日期匹配函数（解决 25.10.1 误查出 11/12/13/14 的 Bug）
         function isDateMatch(photoDateStr, searchInput) {
             if (!searchInput || !searchInput.trim()) return true;
+            if (!photoDateStr) return false;
 
-            let input = searchInput.trim().toLowerCase();
-            input = input.replace(/年|月|-/g, '.').replace(/日/g, '');
-            const target = photoDateStr.trim().toLowerCase();
+            const query = searchInput.trim().replace(/年|月|日|\//g, '.');
+            const item = photoDateStr.trim().replace(/年|月|日|\//g, '.');
 
-            if (target === input) return true;
+            if (item === query) return true;
 
-            if (input.startsWith('25.') || input.startsWith('26.')) {
-                return target === input || target.includes(input);
+            const itemParts = item.split('.').map(p => p.trim()).filter(Boolean);
+            const queryParts = query.split('.').map(p => p.trim()).filter(Boolean);
+
+            if (itemParts.length < 3) return false;
+
+            const itemY = itemParts[0];
+            const itemM = parseInt(itemParts[1], 10);
+            const itemD = parseInt(itemParts[2], 10);
+
+            // 规则 1: 输入完整年月日 (如 25.10.1 或 2025.10.1)
+            if (queryParts.length === 3) {
+                const qY = queryParts[0];
+                const qM = parseInt(queryParts[1], 10);
+                const qD = parseInt(queryParts[2], 10);
+
+                const yearMatch = (itemY === qY) || (itemY.slice(-2) === qY.slice(-2));
+                return yearMatch && (itemM === qM) && (itemD === qD);
             }
 
-            const default26 = `26.${input}`;
-            if (target === default26 || target.endsWith(`.${input}`)) {
-                return true;
+            // 规则 2: 只输入月和日 (如 10.1)
+            if (queryParts.length === 2) {
+                const qM = parseInt(queryParts[0], 10);
+                const qD = parseInt(queryParts[2], 10);
+                return (itemM === qM) && (itemD === qD);
             }
 
-            return target.includes(input);
+            // 规则 3: 只输入单个数字 (如 10 查10月，或 25 查25年)
+            if (queryParts.length === 1) {
+                const val = parseInt(queryParts[0], 10);
+                return (itemY === queryParts[0]) || (itemY.slice(-2) === queryParts[0]) || (itemM === val);
+            }
+
+            return false;
         }
 
         async function executeSearch() {
@@ -783,7 +803,7 @@
                 // 1. 获取静态 photos.json 中的照片
                 if (!localPhotosCache) {
                     try {
-                        const response = await fetch('photos.json');
+                        const response = await fetch('photos.json?v=' + Date.now());
                         if (response.ok) {
                             localPhotosCache = await response.json();
                         } else {
