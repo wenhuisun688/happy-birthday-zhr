@@ -149,10 +149,10 @@
 
         /* 💖 右下角惊喜小按钮 */
         .corner-heart-btn {
-            position: fixed; bottom: 24px; right: 12px; width: 46px; height: 46px; z-index: 9999; border-radius: 50%;
+            position: fixed; bottom: 24px; right: 12px; z-index: 9999; width: 46px; height: 46px; border-radius: 50%;
             background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             border: 1.5px solid rgba(255, 255, 255, 0.95); box-shadow: 0 8px 22px rgba(130, 70, 180, 0.22);
-            display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; z-index: 50;
+            display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer;
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
         }
         .corner-heart-btn:hover { transform: scale(1.18); box-shadow: 0 12px 30px rgba(124, 58, 237, 0.35); }
@@ -491,7 +491,7 @@
                 e.stopPropagation();
                 if (e.cancelable) e.preventDefault();
             }
-            // 兼容 iOS Safari: 确保 AudioContext 已唤醒
+            // 兼容 iOS Safari: 唤醒 AudioContext
             try {
                 if (audioCtx && audioCtx.state === 'suspended') {
                     audioCtx.resume();
@@ -505,9 +505,7 @@
         }
 
         musicBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
-        // 移动端: 使用 passive:false 确保 stopPropagation 生效
         musicBtn.addEventListener('touchstart', (e) => { e.stopPropagation(); }, { passive: false });
-        // 防重复触发: 用变量标记
         var _musicTouched = false;
         musicBtn.addEventListener('touchend', (e) => {
             e.stopPropagation();
@@ -4591,7 +4589,25 @@
         "img_url":  "photos/26.9.29_2.jpg",
         "date_str":  "26.9.29"
     },
-];
+];];
+        let localPhotosCache = null;
+
+        // 🔥 精确日期匹配函数（解决 25.10.1 误查出 11/12/13/14 的 Bug）
+        function isDateMatch(photoDateStr, searchInput) {
+            if (!searchInput || !searchInput.trim()) return true;
+            if (!photoDateStr) return false;
+
+            const query = searchInput.trim().replace(/年|月|日|\//g, '.');
+            const item = photoDateStr.trim().replace(/年|月|日|\//g, '.');
+
+            if (item === query) return true;
+
+            const itemParts = item.split('.').map(p => p.trim()).filter(Boolean);
+            const queryParts = query.split('.').map(p => p.trim()).filter(Boolean);
+
+            if (itemParts.length < 3) return false;
+
+            const itemY = itemParts[0];
             const itemM = parseInt(itemParts[1], 10);
             const itemD = parseInt(itemParts[2], 10);
 
