@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -149,7 +149,7 @@
 
         /* 💖 右下角惊喜小按钮 */
         .corner-heart-btn {
-            position: absolute; bottom: 24px; right: 12px; width: 46px; height: 46px; border-radius: 50%;
+            position: fixed; bottom: 24px; right: 12px; width: 46px; height: 46px; z-index: 9999; border-radius: 50%;
             background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             border: 1.5px solid rgba(255, 255, 255, 0.95); box-shadow: 0 8px 22px rgba(130, 70, 180, 0.22);
             display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; z-index: 50;
@@ -491,6 +491,12 @@
                 e.stopPropagation();
                 if (e.cancelable) e.preventDefault();
             }
+            // 兼容 iOS Safari: 确保 AudioContext 已唤醒
+            try {
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            } catch(_) {}
             if (isMusicPlaying) {
                 fadeOutBGM();
             } else {
@@ -499,8 +505,21 @@
         }
 
         musicBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
-        musicBtn.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
-        musicBtn.addEventListener('click', toggleBGM);
+        // 移动端: 使用 passive:false 确保 stopPropagation 生效
+        musicBtn.addEventListener('touchstart', (e) => { e.stopPropagation(); }, { passive: false });
+        // 防重复触发: 用变量标记
+        var _musicTouched = false;
+        musicBtn.addEventListener('touchend', (e) => {
+            e.stopPropagation();
+            if (!_musicTouched) {
+                _musicTouched = true;
+                toggleBGM(e);
+                setTimeout(function() { _musicTouched = false; }, 300);
+            }
+        });
+        musicBtn.addEventListener('click', function(e) {
+            if (!_musicTouched) toggleBGM(e);
+        });
 
         function handleFirstTouch(e) {
             if (musicBtn.contains(e.target)) return;
@@ -747,7 +766,7 @@
 
         
         // ===== 内嵌照片数据（避免本地 file:// 协议下 fetch 被 CORS 拦截） =====
-        const EMBEDDED_PHOTOS = [
+                const EMBEDDED_PHOTOS = [
     {
         "img_url":  "photos/1.13.jpg",
         "date_str":  "26.1.13"
@@ -4097,15 +4116,7 @@
         "date_str":  "26.7.1"
     },
     {
-        "img_url":  "photos/26.7.1_1_1.jpg",
-        "date_str":  "26.7.1"
-    },
-    {
         "img_url":  "photos/26.7.1_2.jpg",
-        "date_str":  "26.7.1"
-    },
-    {
-        "img_url":  "photos/26.7.1_2_1.jpg",
         "date_str":  "26.7.1"
     },
     {
@@ -4113,19 +4124,7 @@
         "date_str":  "26.7.1"
     },
     {
-        "img_url":  "photos/26.7.1_3_1.jpg",
-        "date_str":  "26.7.1"
-    },
-    {
         "img_url":  "photos/26.7.1_4.jpg",
-        "date_str":  "26.7.1"
-    },
-    {
-        "img_url":  "photos/26.7.1_4_1.jpg",
-        "date_str":  "26.7.1"
-    },
-    {
-        "img_url":  "photos/26.7.1_5.jpg",
         "date_str":  "26.7.1"
     },
     {
@@ -4141,15 +4140,7 @@
         "date_str":  "26.7.1"
     },
     {
-        "img_url":  "photos/26.7.1_8_1.jpg",
-        "date_str":  "26.7.1"
-    },
-    {
         "img_url":  "photos/26.7.1_9.jpg",
-        "date_str":  "26.7.1"
-    },
-    {
-        "img_url":  "photos/26.7.1_9_1.jpg",
         "date_str":  "26.7.1"
     },
     {
@@ -4517,23 +4508,11 @@
         "date_str":  "26.7.3"
     },
     {
-        "img_url":  "photos/26.7.3_1_1.jpg",
-        "date_str":  "26.7.3"
-    },
-    {
         "img_url":  "photos/26.7.3_2.jpg",
         "date_str":  "26.7.3"
     },
     {
-        "img_url":  "photos/26.7.3_2_1.jpg",
-        "date_str":  "26.7.3"
-    },
-    {
         "img_url":  "photos/26.7.3_3.jpg",
-        "date_str":  "26.7.3"
-    },
-    {
-        "img_url":  "photos/26.7.3_3_1.jpg",
         "date_str":  "26.7.3"
     },
     {
@@ -4545,15 +4524,7 @@
         "date_str":  "26.7.4"
     },
     {
-        "img_url":  "photos/26.7.4_1_1.jpg",
-        "date_str":  "26.7.4"
-    },
-    {
         "img_url":  "photos/26.7.4_2.jpg",
-        "date_str":  "26.7.4"
-    },
-    {
-        "img_url":  "photos/26.7.4_2_1.jpg",
         "date_str":  "26.7.4"
     },
     {
@@ -4619,27 +4590,8 @@
     {
         "img_url":  "photos/26.9.29_2.jpg",
         "date_str":  "26.9.29"
-    }
-]
-;
-        let localPhotosCache = null;
-
-        // 🔥 精确日期匹配函数（解决 25.10.1 误查出 11/12/13/14 的 Bug）
-        function isDateMatch(photoDateStr, searchInput) {
-            if (!searchInput || !searchInput.trim()) return true;
-            if (!photoDateStr) return false;
-
-            const query = searchInput.trim().replace(/年|月|日|\//g, '.');
-            const item = photoDateStr.trim().replace(/年|月|日|\//g, '.');
-
-            if (item === query) return true;
-
-            const itemParts = item.split('.').map(p => p.trim()).filter(Boolean);
-            const queryParts = query.split('.').map(p => p.trim()).filter(Boolean);
-
-            if (itemParts.length < 3) return false;
-
-            const itemY = itemParts[0];
+    },
+];
             const itemM = parseInt(itemParts[1], 10);
             const itemD = parseInt(itemParts[2], 10);
 
