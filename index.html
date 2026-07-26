@@ -138,7 +138,7 @@
         .memory-entry-btn:active { transform: scale(0.94); }
         .btn-avatar { width: 34px; height: 34px; border-radius: 8px; object-fit: cover; border: 1.5px solid rgba(255, 255, 255, 0.95); box-shadow: 0 3px 8px rgba(0,0,0,0.18); display: inline-block; vertical-align: middle; }
 
-        /* ---------------- 第三屏：回忆相册与 3.jpg ---------------- */
+        /* ---------------- 第三屏：回忆相册与 3.jpg / 6.jpg ---------------- */
         #screen3 { padding: 16px; overflow-y: auto; }
         .gallery-wrapper {
             position: relative; width: 100%; min-height: 100%; display: flex; flex-direction: column;
@@ -147,13 +147,12 @@
         }
         .gallery-wrapper.searched { justify-content: flex-start; padding-top: 20px; padding-bottom: 30px; }
 
-        /* 💖 右下角惊喜超链接按钮 */
+        /* 💖 右下角惊喜小按钮 */
         .corner-heart-btn {
             position: absolute; bottom: 24px; right: 12px; width: 46px; height: 46px; border-radius: 50%;
             background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             border: 1.5px solid rgba(255, 255, 255, 0.95); box-shadow: 0 8px 22px rgba(130, 70, 180, 0.22);
             display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; z-index: 50;
-            text-decoration: none; /* 去除超链接下划线 */
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
         }
         .corner-heart-btn:hover { transform: scale(1.18); box-shadow: 0 12px 30px rgba(124, 58, 237, 0.35); }
@@ -239,7 +238,7 @@
         }
         .lightbox-overlay.show .lightbox-img { transform: scale(1); }
 
-        /* ---------------- 上传弹窗 ---------------- */
+        /* ---------------- 上传弹窗与照片拖拽/选择框 ---------------- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(30, 10, 60, 0.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -368,8 +367,8 @@
     <!-- 第三屏 -->
     <div class="screen" id="screen3">
         <div class="gallery-wrapper" id="galleryWrapper">
-            <!-- 💖 右下角按钮 (已改为超链接，请在 href 中填写你想跳转的网址) -->
-            <a class="corner-heart-btn" id="cornerHeartBtn" href="https://www.kdocs.cn/l/ceiCaOu62mBE" target="_blank" title="专属惊喜">💖</a>
+            <!-- 💖 右下角按钮 (点击弹出 6.jpg) -->
+            <div class="corner-heart-btn" id="cornerHeartBtn" title="专属惊喜">💖</div>
 
             <div class="story-title">Every little piece of our story</div>
 
@@ -396,6 +395,11 @@
     <!-- 通用照片放大灯箱 -->
     <div class="lightbox-overlay" id="lightboxOverlay">
         <img class="lightbox-img" id="lightboxImg" alt="大图预览">
+    </div>
+
+    <!-- 📷 6.jpg 专属大图灯箱 -->
+    <div class="lightbox-overlay" id="heartLightboxOverlay">
+        <img class="lightbox-img" src="6.jpg" alt="惊喜大图">
     </div>
 
     <!-- 上传弹窗 -->
@@ -736,9 +740,10 @@
         const lightboxOverlay = document.getElementById('lightboxOverlay');
         const lightboxImg = document.getElementById('lightboxImg');
         const cornerHeartBtn = document.getElementById('cornerHeartBtn');
+        const heartLightboxOverlay = document.getElementById('heartLightboxOverlay');
 
-        // 阻止爱心按钮点击事件冒泡
-        cornerHeartBtn.addEventListener('click', (e) => { e.stopPropagation(); });
+        cornerHeartBtn.addEventListener('click', (e) => { e.stopPropagation(); heartLightboxOverlay.classList.add('show'); });
+        heartLightboxOverlay.addEventListener('click', () => heartLightboxOverlay.classList.remove('show'));
 
         let localPhotosCache = null;
 
@@ -774,7 +779,7 @@
             // 规则 2: 只输入月和日 (如 10.1)
             if (queryParts.length === 2) {
                 const qM = parseInt(queryParts[0], 10);
-                const qD = parseInt(queryParts[1], 10);
+                const qD = parseInt(queryParts[2], 10);
                 return (itemM === qM) && (itemD === qD);
             }
 
