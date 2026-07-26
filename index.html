@@ -4622,7 +4622,7 @@
     }
 ]
 ;
-        // ============================================================let localPhotosCache = null;
+        // ============================================================// ============================================================let localPhotosCache = null;
 
         // 🔥 精确日期匹配函数（解决 25.10.1 误查出 11/12/13/14 的 Bug）
         function isDateMatch(photoDateStr, searchInput) {
@@ -4707,7 +4707,7 @@
                     filtered.forEach(photo => {
                         const card = document.createElement('div');
                         card.className = 'photo-card';
-                        card.innerHTML = `<img src="${photo.img_url}" loading="lazy" alt="回忆照片"><span class="photo-tag">${photo.date_str}</span>`;
+                        card.innerHTML = `<img src="${photo.img_url}" alt="回忆照片"><span class="photo-tag">${photo.date_str}</span>`;
                         card.addEventListener('click', (e) => { 
                             e.stopPropagation(); 
                             lightboxImg.src = photo.img_url; 
@@ -4832,4 +4832,5 @@
     </script>
 </body>
 </html>
+
 
