@@ -4622,7 +4622,7 @@
     }
 ]
 ;
-        // ============================================================// ============================================================let localPhotosCache = null;
+        let localPhotosCache = null;
 
         // 🔥 精确日期匹配函数（解决 25.10.1 误查出 11/12/13/14 的 Bug）
         function isDateMatch(photoDateStr, searchInput) {
@@ -4656,7 +4656,7 @@
             // 规则 2: 只输入月和日 (如 10.1)
             if (queryParts.length === 2) {
                 const qM = parseInt(queryParts[0], 10);
-                const qD = parseInt(queryParts[2], 10);
+                const qD = parseInt(queryParts[1], 10);
                 return (itemM === qM) && (itemD === qD);
             }
 
@@ -4684,10 +4684,10 @@
                         if (response.ok) {
                             localPhotosCache = await response.json();
                         } else {
-                            localPhotosCache = [];
+                            localPhotosCache = EMBEDDED_PHOTOS || [];
                         }
                     } catch (e) {
-                        localPhotosCache = [];
+                        localPhotosCache = EMBEDDED_PHOTOS || [];
                     }
                 }
 
